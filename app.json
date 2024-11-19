@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "learnPhysiology",
+    "name": "bsmsphysiology",
     "slug": "learnPhysiology",
     "version": "1.0.0",
+    "newArchEnabled": true,
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "bsmsphysiology",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -13,13 +14,15 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cjtaylormade.bsmsphysiology"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.cjtaylormade.bsmsphysiology"
     },
     "web": {
       "bundler": "metro",
@@ -27,10 +30,17 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a2993842-0d28-4704-8291-66ef03edd6ca"
+      }
+    },
+    "owner": "cjtaylormade"
   }
 }

@@ -19,19 +19,29 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon name={focused ? 'home' : 'home'} color={color} />
           ),
         }}
       />
-      <Tabs.Screen
-        name="explore"
+      {/* <Tabs.Screen
+        name="Questions"
         options={{
-          title: 'Explore',
+          title: 'Questions',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon name={focused ? 'help-circle' : 'help-circle'} color={color} />
+          ),
+        }}
+      />*/}
+      <Tabs.Screen
+        name="QuizQuestions"
+        options={{
+          title: 'QuizQuestions',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'help-circle' : 'help-circle'} color={color} />
           ),
         }}
       />
+
     </Tabs>
   );
 }

@@ -9,7 +9,7 @@ import Animated, {
 
 import { ThemedView } from '@/components/ThemedView';
 
-const HEADER_HEIGHT = 250;
+const HEADER_HEIGHT = 125;
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
@@ -32,11 +32,11 @@ export default function ParallaxScrollView({
           translateY: interpolate(
             scrollOffset.value,
             [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
+            [-HEADER_HEIGHT / 4, 0, HEADER_HEIGHT * 0.5]
           ),
         },
         {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
+          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [1.5, 1, 1]),
         },
       ],
     };
@@ -45,13 +45,15 @@ export default function ParallaxScrollView({
   return (
     <ThemedView style={styles.container}>
       <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
+   
+
         <Animated.View
           style={[
             styles.header,
             { backgroundColor: headerBackgroundColor[colorScheme] },
             headerAnimatedStyle,
           ]}>
-          {headerImage}
+          {headerImage} 
         </Animated.View>
         <ThemedView style={styles.content}>{children}</ThemedView>
       </Animated.ScrollView>
@@ -63,9 +65,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    height: 250,
-    overflow: 'hidden',
+  
+ /*   header: {
+      height: HEADER_HEIGHT,
+      width: '100%', // ensure full width for header container
+      alignItems: 'center', // center the logo if needed
+      justifyContent: 'center', // center vertically if needed
+      overflow: 'visible', // ensure no clipping on the sides
+    }, */
+
+  
+   header: {
+    height: 100,
+    width: 400,
+   // overflow: 'hidden',
   },
   content: {
     flex: 1,
