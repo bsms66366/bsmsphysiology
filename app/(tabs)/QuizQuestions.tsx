@@ -20,7 +20,6 @@ type Question = {
   option_4: string;
   answer: string;
   explanation: string;
-  total: number;
 };
 
 export default function App() {
@@ -29,14 +28,7 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [checkIfSelected, setCheckIfSelected] = useState({
-    option1: false,
-    option2: false,
-    option3: false,
-    option4: false,
-  });
-  const [optionSelected, setOptionSelected] = useState(false);
-  const [explanation, setExplanation] = useState('');
+  const [explanation, setExplanation] = useState("");
   const [percentageComplete, setPercentageComplete] = useState(0);
 
   useEffect(() => {
@@ -53,48 +45,40 @@ export default function App() {
   const currentQuestion = questions[currentQuestionIndex];
 
   useEffect(() => {
-    const percentage = Math.round((currentQuestionIndex / (questions.length - 1)) * 100);
+    // Reset explanation and selected option when the question changes
+    setSelectedOption(null);
+    setExplanation("");
+  }, [currentQuestionIndex]);
+
+  useEffect(() => {
+    // Update progress percentage
+    const percentage = Math.round((currentQuestionIndex / questions.length) * 100);
     setPercentageComplete(percentage);
   }, [currentQuestionIndex, questions.length]);
 
   const handleNext = () => {
-    const correctAnswer = currentQuestion?.answer;
-
-    if (selectedOption === correctAnswer) {
+    // Check if the selected option is correct
+    if (selectedOption === currentQuestion?.answer) {
       setScore((prevScore) => prevScore + 1);
     }
 
+    // Move to the next question or show results
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
+      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
     } else {
       setShowResult(true);
     }
-
-    setCheckIfSelected({
-      option1: false,
-      option2: false,
-      option3: false,
-      option4: false,
-    });
   };
 
   const handleSelect = (option: string) => {
     setSelectedOption(option);
+    setExplanation(currentQuestion?.explanation || ""); // Display explanation for selected option
   };
-
-  useEffect(() => {
-    if (selectedOption) {
-      const currentQuestion = questions[currentQuestionIndex];
-      const explanationText = currentQuestion?.explanation;
-      setExplanation(explanationText);
-    }
-  }, [selectedOption]);
 
   const restart = () => {
     setScore(0);
     setCurrentQuestionIndex(0);
     setShowResult(false);
-    setSelectedOption(null);
   };
 
   if (showResult) {
@@ -105,11 +89,15 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.countWrapper}>
-          <Text>{currentQuestionIndex + 1}/{questions.length}</Text>
+          <Text>
+            {currentQuestionIndex + 1}/{questions.length}
+          </Text>
         </View>
 
         <View style={styles.progressWrapper}>
-          <View style={[styles.progressBar, { height: `${percentageComplete}%` }]} />
+          <View
+            style={[styles.progressBar, { height: `${percentageComplete}%` }]}
+          />
           <View style={styles.progressCount}>
             <Text style={styles.percentage}>{Math.round(percentageComplete)}%</Text>
           </View>
@@ -130,12 +118,7 @@ export default function App() {
               key={index}
               option={option}
               selectedOption={selectedOption}
-              setSelectedOption={setSelectedOption}
-              onSelect={() => {
-                setOptionSelected(true);
-                handleSelect(option);
-              }}
-              
+              setSelectedOption={handleSelect}
             />
           ))}
         </View>
@@ -156,6 +139,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  // Same styles as provided earlier
   container: {
     flex: 1,
     backgroundColor: "#e4e4e4",
@@ -218,15 +202,15 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   explanationContainer: {
-    backgroundColor: '#f7f7f7',
+    backgroundColor: "#f7f7f7",
     padding: 16,
     borderRadius: 10,
     marginTop: 20,
   },
   explanationText: {
     fontSize: 16,
-    color: '#333',
-    fontWeight: '400',
+    color: "#333",
+    fontWeight: "400",
     lineHeight: 24,
   },
   btn: {
