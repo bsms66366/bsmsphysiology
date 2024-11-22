@@ -7,8 +7,11 @@ import {
   Image,
   ActivityIndicator,
   Button,
+  StatusBar,
 } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import Icon from "@expo/vector-icons/Ionicons";
+import { Link } from 'expo-router';
 import axios from "axios";
 
 interface UserProfile {
@@ -18,6 +21,8 @@ interface UserProfile {
 
 const DashboardApp = () => {
   const [activeSection, setActiveSection] = useState("Home");
+    {/* Hide the status bar globally */}
+    <StatusBar hidden={true} />
 
   const renderSection = () => {
     switch (activeSection) {
@@ -30,13 +35,17 @@ const DashboardApp = () => {
         return <HomeSection />;
     }
   };
-
+/* const handleBack = () => {
+  navigation.goBack();
+  }; */
   const renderBackButton = (onBack: () => void) => (
     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Icon name="arrow-back" size={30} color="#000000" />
+      <Icon name="arrow-back" size={30} color="#ffffff" />
       <Text style={styles.backButtonText}>Back to Home</Text>
     </TouchableOpacity>
   );
+
+  
 
   const HomeSection = () => (
     <View style={styles.container}>
@@ -63,6 +72,8 @@ const DashboardApp = () => {
   );
 
   const ProfileSection: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+    //const navigation = useNavigation();
+
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -118,8 +129,11 @@ const DashboardApp = () => {
           {user?.email && (
             <Text style={styles.contentText}>Email: {user.email}</Text>
           )}
-          <Button title="Edit Profile" onPress={() => navigation.navigate("screens/EditProfileScreen")}
-      />
+          <Link href="/screens/EditProfileScreen" style={styles.button1}>
+        <Text style={styles.buttonText}>Edit Profile</Text>
+        </Link>
+          {/* <Button title="Edit Profile" onPress={() => navigation.navigate("screens/EditProfileScreen")}
+      /> */}
         </View>
       </View>
     );
@@ -127,6 +141,7 @@ const DashboardApp = () => {
 
   const SettingsSection = () => (
     <View style={styles.container}>
+     
       <View style={styles.headerContainer}>
         {renderBackButton(() => setActiveSection("Home"))}
         <Text style={styles.headerTitle}>Settings Section</Text>
@@ -168,6 +183,13 @@ const DashboardApp = () => {
       padding: 10,
       borderRadius: 5,
     },
+    button1: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#00679A",
+      padding: 10,
+      borderRadius: 5,
+    },
     buttonText: {
       color: "white",
       fontSize: 16,
@@ -195,7 +217,7 @@ const DashboardApp = () => {
       alignItems: "center",
     },
     backButtonText: {
-      color: "#000000",
+      color: "#ffffff",
       fontSize: 16,
       marginLeft: 10,
     },

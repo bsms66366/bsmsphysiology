@@ -35,6 +35,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+
     {/* Root Stack Navigator */}
     <Stack>
       {/* Tabs Layout */}
@@ -42,7 +43,7 @@ export default function RootLayout() {
 
       {/* Profile and Edit Profile Screens */}
         {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
-        <Stack.Screen name="screens/EditProfileScreen" options={{ title: "Edit Profile" }} />
+        <Stack.Screen name="screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
 
 
       {/* Category and Quiz screens */}

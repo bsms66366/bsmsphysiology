@@ -90,6 +90,9 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
+      <View style={styles.headerContainer}>
+      <Text style={styles.whiteText}>Physiology Quiz</Text>
+    </View>
         <View style={styles.countWrapper}>
           <Text>
             {currentQuestionIndex + 1}/{questions.length}
@@ -148,6 +151,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#7F1C3E",
     padding: 20,
+  },
+  headerContainer: {
+    backgroundColor: "#00679A",
+    padding: 40,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 5,
+  },
+  whiteText: {
+    color: "white",
+    fontSize: 16, // Optional: Adjust size as needed
+    fontWeight: "bold", // Optional: Add boldness
   },
   category: {
     fontSize: 14,
