@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
-import { useSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Option from '@/components/Option';
 
 type Question = {
@@ -16,13 +16,20 @@ type Question = {
 };
 
 export default function QuizScreen() {
-  const { category } = useSearchParams(); // Retrieve the selected category
+  const router = useRouter();
+  const category = router.query?.category; // Access query params using router.query
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [score, setScore] = useState(0);
 
   useEffect(() => {
+    if (!category) {
+      alert('Category not provided! Redirecting to home...');
+      router.push('/'); // Redirect if category is missing
+      return;
+    }
+
     axios
       .get<Question[]>('https://placements.bsms.ac.uk/api/physquiz')
       .then((response) => {
@@ -56,7 +63,12 @@ export default function QuizScreen() {
       <Text style={styles.question}>{currentQuestion.question}</Text>
       {[currentQuestion.option_1, currentQuestion.option_2, currentQuestion.option_3, currentQuestion.option_4].map(
         (option, index) => (
-          <Option key={index} option={option} selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+          <Option
+            key={index}
+            option={option}
+            selectedOption={selectedOption}
+            setSelectedOption={setSelectedOption}
+          />
         )
       )}
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
