@@ -11,6 +11,7 @@ import {
 import Option from "@/components/Option";
 import Results from "@/components/Results";
 import axios from "axios";
+import { useLocalSearchParams } from 'expo-router';
 
 type Question = {
   question: string;
@@ -21,19 +22,12 @@ type Question = {
   answer: string;
   explanation: string;
   total: number;
-  category: string; // New category field
-};
-
-type Category = {
-  id: number;
-  name: string;
+  category: string;
 };
 
 export default function App() {
+  const { categoryId, categoryName } = useLocalSearchParams<{ categoryId: string, categoryName: string }>();
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -42,40 +36,16 @@ export default function App() {
   const [percentageComplete, setPercentageComplete] = useState(0);
 
   useEffect(() => {
-    // Fetch questions
+    // Fetch questions for the specific category
     axios
-      .get<Question[]>("https://placements.bsms.ac.uk/api/physquiz")
+      .get<Question[]>(`https://placements.bsms.ac.uk/api/physquiz?category=${categoryId}`)
       .then((response) => {
         setQuestions(response.data);
       })
       .catch((error) => {
         console.error("Error fetching quiz data:", error);
       });
-
-    // Fetch categories
-    axios
-      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
-      .then((response) => {
-        setCategories(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
-  }, []);
-
-  useEffect(() => {
-    // Filter questions when category changes
-    if (selectedCategory === 'all') {
-      setFilteredQuestions(questions);
-    } else {
-      const filtered = questions.filter(q => q.category === selectedCategory);
-      setFilteredQuestions(filtered);
-    }
-    // Reset question index when category changes
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setShowResult(false);
-  }, [selectedCategory, questions]);
+  }, [categoryId]);
 
   useEffect(() => {
     // Reset explanation and selected option when the question changes
@@ -85,11 +55,11 @@ export default function App() {
 
   useEffect(() => {
     // Update progress percentage
-    const percentage = Math.round((currentQuestionIndex / filteredQuestions.length) * 100);
+    const percentage = Math.round((currentQuestionIndex / questions.length) * 100);
     setPercentageComplete(percentage);
-  }, [currentQuestionIndex, filteredQuestions.length]);
+  }, [currentQuestionIndex, questions.length]);
 
-  const currentQuestion = filteredQuestions[currentQuestionIndex];
+  const currentQuestion = questions[currentQuestionIndex];
 
   const handleNext = () => {
     // Check if the selected option is correct
@@ -98,7 +68,7 @@ export default function App() {
     }
 
     // Move to the next question or show results
-    if (currentQuestionIndex < filteredQuestions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
     } else {
       setShowResult(true);
@@ -107,7 +77,7 @@ export default function App() {
 
   const handleSelect = (option: string) => {
     setSelectedOption(option);
-    setExplanation(currentQuestion?.explanation || ""); // Display explanation for selected option
+    setExplanation(currentQuestion?.explanation || "");
   };
 
   const restart = () => {
@@ -124,55 +94,24 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.headerContainer}>
-          <Text style={styles.whiteText}>Physiology Quiz</Text>
+          <Text style={styles.categoryTitle}>{categoryName || 'Quiz'}</Text>
         </View>
-
-        <View style={styles.categoryContainer}>
-          <TouchableOpacity
-            style={[
-              styles.categoryButton,
-              selectedCategory === 'all' && styles.selectedCategory
-            ]}
-            onPress={() => setSelectedCategory('all')}
-          >
-            <Text style={styles.categoryText}>All Categories</Text>
-          </TouchableOpacity>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.categoryButton,
-                  selectedCategory === category.name && styles.selectedCategory
-                ]}
-                onPress={() => setSelectedCategory(category.name)}
-              >
-                <Text style={styles.categoryText}>{category.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
         <View style={styles.countWrapper}>
-          <Text>
-            {currentQuestionIndex + 1}/{filteredQuestions.length}
+          <Text style={styles.countText}>
+            {currentQuestionIndex + 1}/{questions.length}
           </Text>
         </View>
 
         <View style={styles.progressWrapper}>
           <View
-            style={[styles.progressBar, { height: `${percentageComplete}%` }]}
-          />
-          <View style={styles.progressCount}>
+            style={[styles.progressBar, { width: `${percentageComplete}%` }]}
+          >
             <Text style={styles.percentage}>{Math.round(percentageComplete)}%</Text>
           </View>
         </View>
 
         <View style={styles.questionWrapper}>
-          <Text style={styles.category}>
-            {currentQuestion?.category || "Unknown Category"}
-          </Text>
-          <Text>{currentQuestion?.question || "Loading..."}</Text>
+          <Text style={styles.questionText}>{currentQuestion?.question || "Loading..."}</Text>
         </View>
 
         <View style={styles.optionsWrapper}>
@@ -184,24 +123,29 @@ export default function App() {
           ].map((option, index) => (
             <Option
               key={index}
-              option={option}
-              selectedOption={selectedOption}
-              setSelectedOption={handleSelect}
+              text={option || ""}
+              onSelect={() => handleSelect(option || "")}
+              isSelected={selectedOption === option}
             />
           ))}
         </View>
 
-        {selectedOption && explanation && (
-          <View style={styles.explanationContainer}>
+        {selectedOption && (
+          <View style={styles.explanationWrapper}>
             <Text style={styles.explanationText}>{explanation}</Text>
           </View>
         )}
 
-        <TouchableOpacity style={styles.btn} onPress={handleNext}>
-          <Text style={{ color: "#fff" }}>Next</Text>
-        </TouchableOpacity>
+        {selectedOption && (
+          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+            <Text style={styles.nextButtonText}>
+              {currentQuestionIndex === questions.length - 1
+                ? "Finish Quiz"
+                : "Next Question"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
-      <StatusBar style="auto" />
     </SafeAreaView>
   );
 }
@@ -219,22 +163,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
     elevation: 5,
   },
-  whiteText: {
-    color: "white",
-    fontSize: 16, // Optional: Adjust size as needed
-    fontWeight: "bold", // Optional: Add boldness
-  },
-  category: {
-    fontSize: 14,
+  categoryTitle: {
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#555",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  questionText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    color: "white",
     textAlign: "center",
   },
   countWrapper: {
@@ -242,6 +174,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 10,
+  },
+  countText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  progressWrapper: {
+    width: "100%",
+    height: 20,
+    backgroundColor: "#4C85BA",
+    borderRadius: 10,
+    alignItems: "center",
+    overflow: "hidden",
+    position: "relative",
+    marginBottom: 30,
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#00679A",
+    position: "absolute",
+    left: 0,
+  },
+  percentage: {
+    fontWeight: "600",
+    fontSize: 16,
+    color: "#fff",
   },
   questionWrapper: {
     marginTop: 60,
@@ -256,44 +214,17 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     alignItems: "center",
   },
-  progressWrapper: {
-    width: 70,
-    height: 70,
-    backgroundColor: "#4C85BA",
-    borderRadius: 50,
-    alignItems: "center",
-    overflow: "hidden",
-    position: "relative",
-    marginBottom: 30,
-    marginTop: -50,
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: "#00679A",
-    position: "absolute",
-    bottom: 0,
-  },
-  progressCount: {
-    height: 58,
-    width: 58,
-    borderRadius: 50,
-    backgroundColor: "#FAF5ED",
-    zIndex: 10,
-    position: "absolute",
-    top: 6,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  percentage: {
+  questionText: {
+    fontSize: 18,
     fontWeight: "600",
-    fontSize: 16,
-    color: "#000000",
+    color: "#333",
+    textAlign: "center",
   },
   optionsWrapper: {
     marginTop: 40,
     width: "100%",
   },
-  explanationContainer: {
+  explanationWrapper: {
     backgroundColor: "#f7f7f7",
     padding: 16,
     borderRadius: 10,
@@ -305,7 +236,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     lineHeight: 24,
   },
-  btn: {
+  nextButton: {
     width: "100%",
     height: 50,
     borderRadius: 16,
@@ -314,23 +245,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
-  categoryContainer: {
-    padding: 10,
-    marginBottom: 10,
-  },
-  categoryButton: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  selectedCategory: {
-    backgroundColor: '#007AFF',
-  },
-  categoryText: {
-    fontSize: 14,
-    color: '#333',
+  nextButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
   },
 });

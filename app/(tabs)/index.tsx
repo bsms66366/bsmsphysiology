@@ -164,7 +164,7 @@ const DashboardApp = ({ navigation }: { navigation: any }) => {
               <Link
                 href={{
                   pathname: "/screens/QuizQuestions",
-                  params: { categoryId: selectedCategory.id }
+                  params: { categoryId: selectedCategory.id, categoryName: selectedCategory.name }
                 }}
                 style={styles.startButton}
               >
@@ -176,7 +176,32 @@ const DashboardApp = ({ navigation }: { navigation: any }) => {
           )
         )}
         data={loadingCategories || error ? [] : filteredCategories}
-        renderItem={renderCategoryItem}
+        renderItem={({ item }) => (
+          <Link
+            href={{
+              pathname: "/screens/QuizQuestions",
+              params: {
+                categoryId: item.id,
+                categoryName: item.name
+              }
+            }}
+            asChild
+          >
+            <TouchableOpacity 
+              style={[
+                styles.categoryItem,
+                selectedCategory?.id === item.id && styles.selectedCategoryItem
+              ]}
+            >
+              <Text style={[
+                styles.categoryText,
+                selectedCategory?.id === item.id && styles.selectedCategoryText
+              ]}>
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          </Link>
+        )}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         showsVerticalScrollIndicator={true}
