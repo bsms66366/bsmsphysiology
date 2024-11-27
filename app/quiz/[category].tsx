@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 
-// This would typically come from your API or database
+// Mock questions - this would typically come from your API or database
 const mockQuestions = {
   'core-concepts': [
     {
