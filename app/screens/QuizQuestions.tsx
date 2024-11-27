@@ -24,8 +24,16 @@ type Question = {
   category: string; // New category field
 };
 
+type Category = {
+  id: number;
+  name: string;
+};
+
 export default function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -34,6 +42,7 @@ export default function App() {
   const [percentageComplete, setPercentageComplete] = useState(0);
 
   useEffect(() => {
+    // Fetch questions
     axios
       .get<Question[]>("https://placements.bsms.ac.uk/api/physquiz")
       .then((response) => {
@@ -42,9 +51,31 @@ export default function App() {
       .catch((error) => {
         console.error("Error fetching quiz data:", error);
       });
+
+    // Fetch categories
+    axios
+      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
+      .then((response) => {
+        setCategories(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+      });
   }, []);
 
-  const currentQuestion = questions[currentQuestionIndex];
+  useEffect(() => {
+    // Filter questions when category changes
+    if (selectedCategory === 'all') {
+      setFilteredQuestions(questions);
+    } else {
+      const filtered = questions.filter(q => q.category === selectedCategory);
+      setFilteredQuestions(filtered);
+    }
+    // Reset question index when category changes
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setShowResult(false);
+  }, [selectedCategory, questions]);
 
   useEffect(() => {
     // Reset explanation and selected option when the question changes
@@ -54,9 +85,11 @@ export default function App() {
 
   useEffect(() => {
     // Update progress percentage
-    const percentage = Math.round((currentQuestionIndex / questions.length) * 100);
+    const percentage = Math.round((currentQuestionIndex / filteredQuestions.length) * 100);
     setPercentageComplete(percentage);
-  }, [currentQuestionIndex, questions.length]);
+  }, [currentQuestionIndex, filteredQuestions.length]);
+
+  const currentQuestion = filteredQuestions[currentQuestionIndex];
 
   const handleNext = () => {
     // Check if the selected option is correct
@@ -65,7 +98,7 @@ export default function App() {
     }
 
     // Move to the next question or show results
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < filteredQuestions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
     } else {
       setShowResult(true);
@@ -90,12 +123,39 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-      <View style={styles.headerContainer}>
-      <Text style={styles.whiteText}>Physiology Quiz</Text>
-    </View>
+        <View style={styles.headerContainer}>
+          <Text style={styles.whiteText}>Physiology Quiz</Text>
+        </View>
+
+        <View style={styles.categoryContainer}>
+          <TouchableOpacity
+            style={[
+              styles.categoryButton,
+              selectedCategory === 'all' && styles.selectedCategory
+            ]}
+            onPress={() => setSelectedCategory('all')}
+          >
+            <Text style={styles.categoryText}>All Categories</Text>
+          </TouchableOpacity>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category.name && styles.selectedCategory
+                ]}
+                onPress={() => setSelectedCategory(category.name)}
+              >
+                <Text style={styles.categoryText}>{category.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
         <View style={styles.countWrapper}>
           <Text>
-            {currentQuestionIndex + 1}/{questions.length}
+            {currentQuestionIndex + 1}/{filteredQuestions.length}
           </Text>
         </View>
 
@@ -109,8 +169,9 @@ export default function App() {
         </View>
 
         <View style={styles.questionWrapper}>
-        <Text style={styles.category}>
-        {currentQuestion?.category || "Unknown Category"}</Text>
+          <Text style={styles.category}>
+            {currentQuestion?.category || "Unknown Category"}
+          </Text>
           <Text>{currentQuestion?.question || "Loading..."}</Text>
         </View>
 
@@ -146,7 +207,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  // Same styles as provided earlier
   container: {
     flex: 1,
     backgroundColor: "#7F1C3E",
@@ -253,5 +313,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
+  },
+  categoryContainer: {
+    padding: 10,
+    marginBottom: 10,
+  },
+  categoryButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  selectedCategory: {
+    backgroundColor: '#007AFF',
+  },
+  categoryText: {
+    fontSize: 14,
+    color: '#333',
   },
 });

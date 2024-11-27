@@ -48,10 +48,10 @@ export default function RootLayout() {
 
       {/* Category and Quiz screens */}
       <Stack.Screen name="screens/CategoryScreen" options={{ title: 'Select Category' }} />
-      <Stack.Screen name="screens/QuizScreen" options={{ title: 'Quiz' }} />
-
-      {/* Default not-found screen */}
-      <Stack.Screen name="+not-found" />
+      {/* <Stack.Screen name="screens/QuizScreen" options={{ title: 'Quiz' }} /> */}
+      <Stack.Screen name="screens/QuizQuestions" options={{ title: 'Questions' }} />
+       {/* Default not-found screen  */}
+      {/*<Stack.Screen name="+not-found" />*/}
     </Stack>
   </ThemeProvider>
   );

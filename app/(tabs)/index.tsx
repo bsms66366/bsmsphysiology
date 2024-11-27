@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Button,
   StatusBar,
+  TextInput,
+  FlatList,
 } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import Icon from "@expo/vector-icons/Ionicons";
@@ -16,13 +18,48 @@ import axios from "axios";
 
 interface UserProfile {
   name: string;
-  email?: string; // Make email optional
+  email?: string;
 }
 
-const DashboardApp = () => {
+interface Category {
+  id: number;
+  name: string;
+}
+
+const DashboardApp = ({ navigation }: { navigation: any }) => {
   const [activeSection, setActiveSection] = useState("Home");
-    {/* Hide the status bar globally */}
-    <StatusBar hidden={true} />
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("https://placements.bsms.ac.uk/api/categories");
+        console.log('Categories response:', response.data);
+        setCategories(response.data);
+        setFilteredCategories(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError("Failed to load categories. Please try again later.");
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const filtered = categories.filter(category =>
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  }, [searchQuery, categories]);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -30,14 +67,11 @@ const DashboardApp = () => {
         return <ProfileSection onBack={() => setActiveSection("Home")} />;
       case "Settings":
         return <SettingsSection />;
-      // Add other cases here
       default:
         return <HomeSection />;
     }
   };
-/* const handleBack = () => {
-  navigation.goBack();
-  }; */
+
   const renderBackButton = (onBack: () => void) => (
     <TouchableOpacity onPress={onBack} style={styles.backButton}>
       <Icon name="arrow-back" size={30} color="#ffffff" />
@@ -45,10 +79,25 @@ const DashboardApp = () => {
     </TouchableOpacity>
   );
 
-  
+  const renderCategoryItem = ({ item }: { item: Category }) => (
+    <TouchableOpacity 
+      style={[
+        styles.categoryItem,
+        selectedCategory?.id === item.id && styles.selectedCategoryItem
+      ]}
+      onPress={() => setSelectedCategory(item)}
+    >
+      <Text style={[
+        styles.categoryText,
+        selectedCategory?.id === item.id && styles.selectedCategoryText
+      ]}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
 
-  const HomeSection = () => (
-    <View style={styles.container}>
+  const HomeSection: React.FC = () => (
+    <View style={styles.mainContainer}>
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>Welcome BSMS Physiology!</Text>
         <View style={styles.buttonsContainer}>
@@ -68,12 +117,76 @@ const DashboardApp = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <FlatList
+        ListHeaderComponent={() => (
+          <>
+            <View style={styles.imageButtonContainer}>
+              <Image
+                source={require("@/assets/images/PinkLogo.png")}
+                style={styles.image}
+              />
+            </View>
+            
+            {loadingCategories ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : error ? (
+              <View>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity 
+                  style={styles.retryButton}
+                  onPress={() => {
+                    setLoadingCategories(true);
+                    setError(null);
+                    fetchCategories();
+                  }}
+                >
+                  <Text style={styles.retryButtonText}>Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.searchContainer}>
+                <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search categories..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor="#666"
+                />
+              </View>
+            )}
+          </>
+        )}
+        ListFooterComponent={() => (
+          selectedCategory && (
+            <View style={styles.startButtonContainer}>
+              <Link
+                href={{
+                  pathname: "/screens/QuizQuestions",
+                  params: { categoryId: selectedCategory.id }
+                }}
+                style={styles.startButton}
+              >
+                <Text style={styles.startButtonText}>
+                  Start Quiz - {selectedCategory.name}
+                </Text>
+              </Link>
+            </View>
+          )
+        )}
+        data={loadingCategories || error ? [] : filteredCategories}
+        renderItem={renderCategoryItem}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={styles.flatListContent}
+        style={styles.flatList}
+      />
     </View>
   );
 
   const ProfileSection: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-    //const navigation = useNavigation();
-
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -147,24 +260,36 @@ const DashboardApp = () => {
         <Text style={styles.headerTitle}>Settings Section</Text>
       </View>
       <View style={styles.contentContainer}>
-        <Icon name="settings" size={80} color="#3498db" />
+      <Icon name="settings" size={80} color="#3498db" />
         <Text style={styles.contentText}>Notifications: On</Text>
         <Text style={styles.contentText}>Theme: Light</Text>
-      </View>
+        </View>
+         
     </View>
   );
 
   const styles = StyleSheet.create({
-    container: {
+    mainContainer: {
       flex: 1,
       backgroundColor: "#7F1C3E",
+    },
+    flatList: {
+      flex: 1,
+    },
+    flatListContent: {
+      paddingHorizontal: 15,
+      paddingBottom: 40,
+    },
+    container: {
+      flex: 1,
+      padding: 20,
     },
     headerContainer: {
       backgroundColor: "#00679A",
       padding: 20,
       borderBottomLeftRadius: 20,
       borderBottomRightRadius: 20,
-      elevation: 5,
+      marginBottom: 10,
     },
     headerTitle: {
       fontSize: 24,
@@ -212,6 +337,15 @@ const DashboardApp = () => {
       borderRadius: 60,
       marginBottom: 20,
     },
+    image: {
+    width: 200, // Adjust the size of the image as needed
+    height: 200,
+    marginTop: 20, // Add some space above the image
+  },
+  imageButtonContainer: {
+    alignItems: 'center', // Center the image and button horizontally
+    marginVertical: 15,
+  },
     backButton: {
       flexDirection: "row",
       alignItems: "center",
@@ -227,9 +361,75 @@ const DashboardApp = () => {
       marginTop: 20,
       textAlign: "center",
     },
+    retryButton: {
+      backgroundColor: "#00679A",
+      padding: 10,
+      borderRadius: 5,
+      marginTop: 10,
+    },
+    retryButtonText: {
+      color: "white",
+      fontSize: 16,
+      fontWeight: "bold",
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#f5f5f5',
+      borderRadius: 10,
+      paddingHorizontal: 10,
+      marginHorizontal: 5,
+      marginBottom: 15,
+      marginTop: 10,
+    },
+    searchIcon: {
+      marginRight: 10,
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      color: '#333',
+      fontSize: 16,
+    },
+    categoryItem: {
+      flex: 1,
+      margin: 5,
+      padding: 15,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 60,
+    },
+    selectedCategoryItem: {
+      backgroundColor: '#007AFF',
+    },
+    categoryText: {
+      fontSize: 14,
+      color: '#333',
+      textAlign: 'center',
+    },
+    selectedCategoryText: {
+      color: '#fff',
+    },
+    startButtonContainer: {
+      paddingHorizontal: 5,
+      paddingTop: 15,
+      paddingBottom: 30,
+    },
+    startButton: {
+      backgroundColor: '#00679A',
+      padding: 15,
+      borderRadius: 10,
+    },
+    startButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
   });
 
-  return <View style={styles.container}>{renderSection()}</View>;
+  return <View style={styles.mainContainer}>{renderSection()}</View>;
 };
 
 export default DashboardApp;
