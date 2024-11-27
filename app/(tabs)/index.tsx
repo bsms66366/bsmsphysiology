@@ -31,7 +31,7 @@ const DashboardApp = () => {
   const HomeSection = () => (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>BSMS Physiology</Text>
+        <Text style={[styles.headerTitle, { marginTop: 10 }]}>BSMS Physiology</Text>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity 
             style={styles.button}
@@ -39,8 +39,6 @@ const DashboardApp = () => {
           >
             <Icon name="person" size={24} color="#fff" />
             <Text style={styles.buttonText}>Profile</Text>
-            <View style={styles.buttonContainer}>
-        </View>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.button}
@@ -138,7 +136,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: "#00679A",
-    //padding: 5,
+    padding: 15,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -146,12 +144,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
-    marginBottom: 20,
     textAlign: 'center',
   },
   buttonsContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
   button: {
     flexDirection: "row",
