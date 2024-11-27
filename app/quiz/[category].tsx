@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 interface Question {
@@ -18,6 +19,13 @@ interface Question {
 interface Category {
   id: number;
   name: string;
+}
+
+interface QuizResult {
+  category: string;
+  score: number;
+  totalQuestions: number;
+  date: string;
 }
 
 export default function QuizScreen() {
@@ -78,13 +86,26 @@ export default function QuizScreen() {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowScore(true);
+      // Save results locally
       try {
-        await axios.post("https://placements.bsms.ac.uk/api/physquiz/results", {
-          category,
-          score: score + 1
-        });
+        const result: QuizResult = {
+          category: category as string,
+          score: score + 1,
+          totalQuestions: questions.length,
+          date: new Date().toISOString()
+        };
+
+        // Get existing results
+        const existingResultsString = await AsyncStorage.getItem('quizResults');
+        const existingResults = existingResultsString ? JSON.parse(existingResultsString) : [];
+        
+        // Add new result
+        const updatedResults = [...existingResults, result];
+        
+        // Save back to storage
+        await AsyncStorage.setItem('quizResults', JSON.stringify(updatedResults));
       } catch (error) {
-        console.error("Error submitting quiz results:", error);
+        console.error("Error saving quiz results locally:", error);
       }
     }
   };

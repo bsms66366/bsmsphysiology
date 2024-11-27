@@ -1,443 +1,301 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  Button,
-  StatusBar,
-  TextInput,
-  FlatList,
-} from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Link } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
-import { Link, router } from 'expo-router';
-import axios from "axios";
-//import { setGlobalSelectedCategory } from './QuizQuestion';
-import { setGlobalSelectedCategory } from '../screens/QuizQuestions';
+
+interface QuizResult {
+  category: string;
+  score: number;
+  totalQuestions: number;
+  date: string;
+}
 
 interface UserProfile {
   name: string;
   email?: string;
 }
 
-interface Category {
-  id: number;
-  name: string;
-}
-
 const DashboardApp = () => {
+  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [activeSection, setActiveSection] = useState("Home");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   useEffect(() => {
-    axios
-      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
-      .then((response) => {
-        setCategories(response.data);
-        setFilteredCategories(response.data);
-        setLoadingCategories(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-        setError("Failed to load categories");
-        setLoadingCategories(false);
-      });
+    loadQuizResults();
   }, []);
 
-  useEffect(() => {
-    const filtered = categories.filter(category =>
-      category.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredCategories(filtered);
-  }, [searchQuery, categories]);
+  const loadQuizResults = async () => {
+    try {
+      const resultsString = await AsyncStorage.getItem('quizResults');
+      if (resultsString) {
+        const results = JSON.parse(resultsString);
+        setQuizResults(results);
+      }
+    } catch (error) {
+      console.error('Error loading quiz results:', error);
+    }
+  };
 
   const renderSection = () => {
     switch (activeSection) {
       case "Profile":
         return <ProfileSection onBack={() => setActiveSection("Home")} />;
       case "Settings":
-        return <SettingsSection />;
+        return <SettingsSection onBack={() => setActiveSection("Home")} />;
       default:
         return <HomeSection />;
     }
   };
 
-  const renderBackButton = (onBack: () => void) => (
-    <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Icon name="arrow-back" size={30} color="#ffffff" />
-      <Text style={styles.backButtonText}>Back to Home</Text>
-    </TouchableOpacity>
-  );
-
-  const renderCategoryItem = ({ item }: { item: Category }) => (
-    <TouchableOpacity 
-      style={[
-        styles.categoryItem,
-        selectedCategory?.id === item.id && styles.selectedCategoryItem
-      ]}
-      onPress={() => setSelectedCategory(item)}
-    >
-      <Text style={[
-        styles.categoryText,
-        selectedCategory?.id === item.id && styles.selectedCategoryText
-      ]}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const HomeSection: React.FC = () => (
-    <View style={styles.mainContainer}>
+  const HomeSection = () => (
+    <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Welcome BSMS Physiology!</Text>
+        <Text style={styles.headerTitle}>BSMS Physiology Quiz</Text>
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            onPress={() => setActiveSection("Profile")}
+          <TouchableOpacity 
             style={styles.button}
+            onPress={() => setActiveSection("Profile")}
           >
-            <Icon name="person" size={30} color="white" />
+            <Icon name="person" size={24} color="#fff" />
             <Text style={styles.buttonText}>Profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveSection("Settings")}
+          <TouchableOpacity 
             style={styles.button}
+            onPress={() => setActiveSection("Settings")}
           >
-            <Icon name="settings" size={30} color="white" />
+            <Icon name="settings" size={24} color="#fff" />
             <Text style={styles.buttonText}>Settings</Text>
           </TouchableOpacity>
         </View>
       </View>
+      
+      <ScrollView style={styles.resultsContainer}>
+        <View style={styles.contentContainer}>
+          <Link href="/quiz/general" style={styles.startButton}>
+            <Text style={styles.startButtonText}>Start Quiz</Text>
+          </Link>
+        </View>
 
-      <FlatList
-        ListHeaderComponent={() => (
-          <>
-            <View style={styles.imageButtonContainer}>
-              <Image
-                source={require("@/assets/images/PinkLogo.png")}
-                style={styles.image}
-              />
+        <Text style={styles.resultsTitle}>Your Quiz Results</Text>
+        {quizResults.length === 0 ? (
+          <Text style={styles.noResults}>No quiz results yet. Take a quiz to see your results here!</Text>
+        ) : (
+          quizResults.map((result, index) => (
+            <View key={index} style={styles.resultCard}>
+              <Text style={styles.category}>{result.category}</Text>
+              <Text style={styles.score}>
+                Score: {result.score} / {result.totalQuestions}
+              </Text>
+              <Text style={styles.date}>
+                {new Date(result.date).toLocaleDateString()}
+              </Text>
+              <Text style={styles.percentage}>
+                {Math.round((result.score / result.totalQuestions) * 100)}% Correct
+              </Text>
             </View>
-            
-            {loadingCategories ? (
-              <ActivityIndicator size="large" color="#0000ff" />
-            ) : error ? (
-              <View>
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity 
-                  style={styles.retryButton}
-                  onPress={() => {
-                    setLoadingCategories(true);
-                    setError(null);
-                    axios
-                      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
-                      .then((response) => {
-                        setCategories(response.data);
-                        setFilteredCategories(response.data);
-                        setLoadingCategories(false);
-                      })
-                      .catch((error) => {
-                        console.error("Error fetching categories:", error);
-                        setError("Failed to load categories");
-                        setLoadingCategories(false);
-                      });
-                  }}
-                >
-                  <Text style={styles.retryButtonText}>Retry</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.searchContainer}>
-                <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search categories..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholderTextColor="#666"
-                />
-              </View>
-            )}
-          </>
+          ))
         )}
-        ListFooterComponent={() => (
-          selectedCategory && (
-            <View style={styles.startButtonContainer}>
-              <TouchableOpacity 
-                style={styles.startButton}
-                onPress={() => {
-                  setGlobalSelectedCategory(selectedCategory.name);
-                  router.push('/screens/QuizQuestion');
-                }}
-              >
-                <Text style={styles.startButtonText}>
-                  Start Quiz - {selectedCategory.name}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )
-        )}
-        data={loadingCategories || error ? [] : filteredCategories}
-        renderItem={renderCategoryItem}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        showsVerticalScrollIndicator={true}
-        contentContainerStyle={styles.flatListContent}
-        style={styles.flatList}
-      />
+      </ScrollView>
     </View>
   );
 
-  const ProfileSection: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-    const [user, setUser] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-      const fetchUserData = async () => {
-        try {
-          const response = await axios.get("https://placements.bsms.ac.uk/api/User/");
-          const { name, email } = response.data;
-          setUser({ name, email });
-        } catch (err) {
-          setError("Failed to load user data. Please try again later.");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchUserData();
-    }, []);
-
-    if (loading) {
-      return (
-        <View style={styles.container}>
-          {renderBackButton(onBack)}
-          <ActivityIndicator size="large" color="#0000ff" />
-        </View>
-      );
-    }
-
-    if (error) {
-      return (
-        <View style={styles.container}>
-          {renderBackButton(onBack)}
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      );
-    }
+  const ProfileSection = ({ onBack }: { onBack: () => void }) => {
+    const user: UserProfile = {
+      name: "John Doe",
+      email: "john@example.com"
+    };
 
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
           {renderBackButton(onBack)}
-          <Text style={styles.headerTitle}>Profile Section</Text>
+          <Text style={styles.headerTitle}>Profile</Text>
         </View>
         <View style={styles.contentContainer}>
           <Image
-            source={{
-              uri: "https://via.placeholder.com/120", // Placeholder for profile picture
-            }}
+            source={{ uri: "https://via.placeholder.com/120" }}
             style={styles.profilePicture}
           />
-          <Text style={styles.contentText}>Username: {user?.name || "N/A"}</Text>
-          {user?.email && (
-            <Text style={styles.contentText}>Email: {user.email}</Text>
-          )}
-          <Link href="/screens/EditProfileScreen" style={styles.button1}>
-        <Text style={styles.buttonText}>Edit Profile</Text>
-        </Link>
-          {/* <Button title="Edit Profile" onPress={() => navigation.navigate("screens/EditProfileScreen")}
-      /> */}
+          <Text style={styles.contentText}>Name: {user.name}</Text>
+          <Text style={styles.contentText}>Email: {user.email}</Text>
+          <TouchableOpacity style={styles.button1}>
+            <Text style={styles.buttonText}>Edit Profile</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
   };
 
-  const SettingsSection = () => (
+  const SettingsSection = ({ onBack }: { onBack: () => void }) => (
     <View style={styles.container}>
-     
       <View style={styles.headerContainer}>
-        {renderBackButton(() => setActiveSection("Home"))}
-        <Text style={styles.headerTitle}>Settings Section</Text>
+        {renderBackButton(onBack)}
+        <Text style={styles.headerTitle}>Settings</Text>
       </View>
       <View style={styles.contentContainer}>
-      <Icon name="settings" size={80} color="#3498db" />
+        <Icon name="settings" size={80} color="#3498db" />
         <Text style={styles.contentText}>Notifications: On</Text>
         <Text style={styles.contentText}>Theme: Light</Text>
-        </View>
-         
+      </View>
     </View>
   );
 
-  const styles = StyleSheet.create({
-    mainContainer: {
-      flex: 1,
-      backgroundColor: "#7F1C3E",
-    },
-    flatList: {
-      flex: 1,
-    },
-    flatListContent: {
-      paddingHorizontal: 15,
-      paddingBottom: 40,
-    },
-    container: {
-      flex: 1,
-      padding: 20,
-    },
-    headerContainer: {
-      backgroundColor: "#00679A",
-      padding: 20,
-      borderBottomLeftRadius: 20,
-      borderBottomRightRadius: 20,
-      marginBottom: 10,
-    },
-    headerTitle: {
-      fontSize: 24,
-      fontWeight: "bold",
-      color: "white",
-      marginBottom: 20,
-    },
-    buttonsContainer: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-    },
-    button: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#7F1C3E",
-      padding: 10,
-      borderRadius: 5,
-    },
-    button1: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#00679A",
-      padding: 10,
-      borderRadius: 5,
-    },
-    buttonText: {
-      color: "white",
-      fontSize: 16,
-      fontWeight: "bold",
-      marginLeft: 10,
-    },
-    contentContainer: {
-      flex: 1,
-      padding: 20,
-      alignItems: "center",
-    },
-    contentText: {
-      fontSize: 16,
-      marginBottom: 10,
-      color: "#FFFFFF",
-    },
-    profilePicture: {
-      width: 120,
-      height: 120,
-      borderRadius: 60,
-      marginBottom: 20,
-    },
-    image: {
-    width: 200, // Adjust the size of the image as needed
-    height: 200,
-    marginTop: 20, // Add some space above the image
-  },
-  imageButtonContainer: {
-    alignItems: 'center', // Center the image and button horizontally
-    marginVertical: 15,
-  },
-    backButton: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    backButtonText: {
-      color: "#ffffff",
-      fontSize: 16,
-      marginLeft: 10,
-    },
-    errorText: {
-      color: "red",
-      fontSize: 16,
-      marginTop: 20,
-      textAlign: "center",
-    },
-    retryButton: {
-      backgroundColor: "#00679A",
-      padding: 10,
-      borderRadius: 5,
-      marginTop: 10,
-    },
-    retryButtonText: {
-      color: "white",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    searchContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#f5f5f5',
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      marginHorizontal: 5,
-      marginBottom: 15,
-      marginTop: 10,
-    },
-    searchIcon: {
-      marginRight: 10,
-    },
-    searchInput: {
-      flex: 1,
-      height: 40,
-      color: '#333',
-      fontSize: 16,
-    },
-    categoryItem: {
-      flex: 1,
-      margin: 5,
-      padding: 15,
-      backgroundColor: '#f0f0f0',
-      borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: 60,
-    },
-    selectedCategoryItem: {
-      backgroundColor: '#007AFF',
-    },
-    categoryText: {
-      fontSize: 14,
-      color: '#333',
-      textAlign: 'center',
-    },
-    selectedCategoryText: {
-      color: '#fff',
-    },
-    startButtonContainer: {
-      paddingHorizontal: 5,
-      paddingTop: 15,
-      paddingBottom: 30,
-    },
-    startButton: {
-      backgroundColor: '#00679A',
-      padding: 15,
-      borderRadius: 10,
-    },
-    startButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-  });
+  const renderBackButton = (onBack: () => void) => (
+    <TouchableOpacity onPress={onBack} style={styles.backButton}>
+      <Icon name="arrow-back" size={24} color="#fff" />
+      <Text style={styles.backButtonText}>Back</Text>
+    </TouchableOpacity>
+  );
 
-  return <View style={styles.mainContainer}>{renderSection()}</View>;
+  return (
+    <View style={styles.mainContainer}>
+      {renderSection()}
+    </View>
+  );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerContainer: {
+    backgroundColor: "#7F1C3E",
+    padding: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#00679A",
+    padding: 10,
+    borderRadius: 8,
+    minWidth: 120,
+    justifyContent: 'center',
+  },
+  button1: {
+    backgroundColor: "#00679A",
+    padding: 10,
+    borderRadius: 8,
+    minWidth: 120,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
+  contentContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  resultsContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  contentText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#333",
+  },
+  profilePicture: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 20,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  backButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  startButton: {
+    backgroundColor: '#00679A',
+    padding: 15,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  startButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  resultsTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#7F1C3E',
+    marginTop: 20,
+  },
+  noResults: {
+    textAlign: 'center',
+    color: '#666',
+    marginTop: 20,
+    fontSize: 16,
+  },
+  resultCard: {
+    backgroundColor: '#f8f8f8',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  category: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#333',
+  },
+  score: {
+    fontSize: 16,
+    color: '#7F1C3E',
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  date: {
+    color: '#666',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  percentage: {
+    fontSize: 16,
+    color: '#28a745',
+    fontWeight: '500',
+  },
+});
 
 export default DashboardApp;
