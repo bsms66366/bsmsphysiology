@@ -1,35 +1,64 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import axios from 'axios';
 
-// Mock questions - this would typically come from your API or database
-const mockQuestions = {
-  'core-concepts': [
-    {
-      question: 'What is homeostasis?',
-      options: [
-        'The maintenance of a stable internal environment',
-        'The process of cell division',
-        'The breakdown of glucose',
-        'The transport of oxygen in blood'
-      ],
-      correctAnswer: 0
-    },
-    // Add more questions...
-  ],
-  // Add more categories...
-};
+interface Question {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 export default function QuizScreen() {
   const { category } = useLocalSearchParams();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const questions = mockQuestions[category as keyof typeof mockQuestions] || [];
+  useEffect(() => {
+    // Fetch categories
+    setLoading(true);
+    setError(null);
+    axios
+      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
+      .then((response) => {
+        setCategories(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+        setError("Failed to load categories");
+      });
+  }, []);
 
-  const handleAnswerClick = (selectedOption: number) => {
-    if (questions[currentQuestion].correctAnswer === selectedOption) {
+  useEffect(() => {
+    // Fetch questions
+    setLoading(true);
+    setError(null);
+    axios
+      .get<Question[]>("https://placements.bsms.ac.uk/api/physquiz")
+      .then((response) => {
+        setQuestions(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching quiz data:", error);
+        setError("Failed to load questions");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [category]);
+
+  const handleAnswerClick = async (selectedOption: number) => {
+    if (questions[currentQuestion]?.correctAnswer === selectedOption) {
       setScore(score + 1);
     }
 
@@ -38,6 +67,14 @@ export default function QuizScreen() {
       setCurrentQuestion(nextQuestion);
     } else {
       setShowScore(true);
+      try {
+        await axios.post("https://placements.bsms.ac.uk/api/physquiz/results", {
+          category,
+          score: score + 1
+        });
+      } catch (error) {
+        console.error("Error submitting quiz results:", error);
+      }
     }
   };
 
@@ -51,10 +88,30 @@ export default function QuizScreen() {
     router.back();
   };
 
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#7F1C3E" />
+        <Text style={styles.loadingText}>Loading quiz...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Pressable style={styles.button} onPress={handleBack}>
+          <Text style={styles.buttonText}>Go Back</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   if (questions.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>No questions available for this category yet.</Text>
+        <Text style={styles.title}>No questions available yet.</Text>
         <Pressable style={styles.button} onPress={handleBack}>
           <Text style={styles.buttonText}>Go Back</Text>
         </Pressable>
@@ -84,10 +141,12 @@ export default function QuizScreen() {
       <Text style={styles.questionCount}>
         Question {currentQuestion + 1}/{questions.length}
       </Text>
-      <Text style={styles.question}>{questions[currentQuestion].question}</Text>
+      <Text style={styles.question}>
+        {questions[currentQuestion]?.question || 'Loading question...'}
+      </Text>
       
       <View style={styles.optionsContainer}>
-        {questions[currentQuestion].options.map((option, index) => (
+        {questions[currentQuestion]?.options?.map((option, index) => (
           <Pressable
             key={index}
             style={styles.optionButton}
@@ -106,6 +165,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,
@@ -155,5 +219,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginVertical: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    color: '#dc3545',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
   },
 });
