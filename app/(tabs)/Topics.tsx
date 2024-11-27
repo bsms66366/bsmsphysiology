@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import { View, StyleSheet, ScrollView, Text, Button, Alert  } from 'react-native';
+import React from "react";
+import { View, StyleSheet, ScrollView, Text, Pressable } from 'react-native';
+import { router } from 'expo-router';
 
 // Import SVG Icons
 import Icon1 from '@/assets/images/icon1.svg';
@@ -15,8 +15,6 @@ import Icon9 from '@/assets/images/icon9.svg';
 import Icon10 from '@/assets/images/icon10.svg';
 
 const App = () => {
-  // Array of imported icons
-  //const icons = [Icon1, Icon2, Icon3, Icon4, Icon5, Icon6, Icon7, Icon8, Icon9, Icon10];
   const iconsWithLabels = [
     { Icon: Icon1, label: 'Core concepts' },
     { Icon: Icon2, label: 'Cells Environment' },
@@ -29,22 +27,25 @@ const App = () => {
     { Icon: Icon9, label: 'Gastrointestinal System' },
     { Icon: Icon10, label: 'Reproductive System' },
   ];
-  const handleButtonPress = (label: string) => {
-    Alert.alert(`Button Pressed`, `You clicked on ${label}`);
+
+  const handleCategoryPress = (label: string) => {
+    router.push({
+      pathname: '/(modals)/category/[id]',
+      params: { id: label.toLowerCase().replace(/\s+/g, '-') }
+    });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {iconsWithLabels.map(({ Icon, label }, index) => (
-        <View key={index} style={styles.iconContainer}>
+        <Pressable
+          key={index}
+          style={styles.iconContainer}
+          onPress={() => handleCategoryPress(label)}
+        >
           <Icon width={120} height={120} />
           <Text style={styles.label}>{label}</Text>
-          <Button
-            title="Click Me"
-            onPress={() => handleButtonPress(label)}
-            color="#1E90FF"
-          />
-        </View>
+        </Pressable>
       ))}
     </ScrollView>
   );

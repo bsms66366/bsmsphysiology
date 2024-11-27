@@ -12,7 +12,7 @@ import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 //import ProfileScreen from "@/screens/ProfileScreen";
-//import EditProfileScreen from "@/screens/EditProfileScreen";
+import EditProfileScreen from "./screens/EditProfileScreen";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -43,13 +43,13 @@ export default function RootLayout() {
 
       {/* Profile and Edit Profile Screens */}
         {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
-        <Stack.Screen name="screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
+        <Stack.Screen name="/screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
 
 
       {/* Category and Quiz screens */}
-      <Stack.Screen name="screens/CategoryScreen" options={{ title: 'Select Category' }} />
-      {/* <Stack.Screen name="screens/QuizScreen" options={{ title: 'Quiz' }} /> */}
-      <Stack.Screen name="screens/QuizQuestions" options={{ title: 'Questions' }} />
+     
+        
+      <Stack.Screen name="/screens/QuizQuestions" options={{ title: 'Questions' }} />
        {/* Default not-found screen  */}
       {/*<Stack.Screen name="+not-found" />*/}
     </Stack>

@@ -32,10 +32,10 @@ export default function TabLayout() {
           ),
         }}
       />
-  {/*     <Tabs.Screen
-        name="QuizScreen"
+     {/* <Tabs.Screen
+        name="QuizQuestions"
         options={{
-          title: 'QuizScreen',
+          title: 'QuizQuestions',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'help-circle' : 'help-circle'} color={color} />
           ),

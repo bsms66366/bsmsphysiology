@@ -11,10 +11,11 @@ import {
   TextInput,
   FlatList,
 } from "react-native";
-import { useNavigation } from '@react-navigation/native';
 import Icon from "@expo/vector-icons/Ionicons";
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import axios from "axios";
+//import { setGlobalSelectedCategory } from './QuizQuestion';
+import { setGlobalSelectedCategory } from '../screens/QuizQuestions';
 
 interface UserProfile {
   name: string;
@@ -26,7 +27,7 @@ interface Category {
   name: string;
 }
 
-const DashboardApp = ({ navigation }: { navigation: any }) => {
+const DashboardApp = () => {
   const [activeSection, setActiveSection] = useState("Home");
   const [categories, setCategories] = useState<Category[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
@@ -36,22 +37,18 @@ const DashboardApp = ({ navigation }: { navigation: any }) => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get("https://placements.bsms.ac.uk/api/categories");
-        console.log('Categories response:', response.data);
+    axios
+      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
+      .then((response) => {
         setCategories(response.data);
         setFilteredCategories(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        setError("Failed to load categories. Please try again later.");
-      } finally {
         setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+        setError("Failed to load categories");
+        setLoadingCategories(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -138,7 +135,18 @@ const DashboardApp = ({ navigation }: { navigation: any }) => {
                   onPress={() => {
                     setLoadingCategories(true);
                     setError(null);
-                    fetchCategories();
+                    axios
+                      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
+                      .then((response) => {
+                        setCategories(response.data);
+                        setFilteredCategories(response.data);
+                        setLoadingCategories(false);
+                      })
+                      .catch((error) => {
+                        console.error("Error fetching categories:", error);
+                        setError("Failed to load categories");
+                        setLoadingCategories(false);
+                      });
                   }}
                 >
                   <Text style={styles.retryButtonText}>Retry</Text>
@@ -161,17 +169,17 @@ const DashboardApp = ({ navigation }: { navigation: any }) => {
         ListFooterComponent={() => (
           selectedCategory && (
             <View style={styles.startButtonContainer}>
-              <Link
-                href={{
-                  pathname: "/screens/QuizQuestions",
-                  params: { categoryId: selectedCategory.id }
-                }}
+              <TouchableOpacity 
                 style={styles.startButton}
+                onPress={() => {
+                  setGlobalSelectedCategory(selectedCategory.name);
+                  router.push('/screens/QuizQuestion');
+                }}
               >
                 <Text style={styles.startButtonText}>
                   Start Quiz - {selectedCategory.name}
                 </Text>
-              </Link>
+              </TouchableOpacity>
             </View>
           )
         )}
