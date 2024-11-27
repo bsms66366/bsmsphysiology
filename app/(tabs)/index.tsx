@@ -201,10 +201,10 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   dashboardImage: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     resizeMode: 'contain',
-    marginVertical: 20,
+    marginVertical: 15,
   },
   navigationButton: {
     backgroundColor: '#00679A',

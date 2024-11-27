@@ -54,7 +54,7 @@ const App = () => {
             style={styles.iconContainer}
             onPress={() => handleCategoryPress(label)}
           >
-            <Icon width={120} height={120} />
+            <Icon width={80} height={80} />
             <Text style={styles.label}>{label}</Text>
           </Pressable>
         ))}
@@ -70,23 +70,23 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#00679A',
-    padding: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    padding: 10,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 5,
   },
   backButton: {
-    paddingVertical: 8,
+    paddingVertical: 5,
   },
   backButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   container: {
@@ -100,13 +100,14 @@ const styles = StyleSheet.create({
     margin: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 8,
     borderRadius: 10,
     backgroundColor: '#7F1C3E',
+    marginBottom: 10,
   },
   label: {
-    marginTop: 8,
-    fontSize: 14,
+    marginTop: 5,
+    fontSize: 12,
     color: '#fff',
     textAlign: 'center',
   },
