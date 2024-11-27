@@ -1,15 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Link } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
-
-interface QuizResult {
-  category: string;
-  score: number;
-  totalQuestions: number;
-  date: string;
-}
 
 interface UserProfile {
   name: string;
@@ -17,24 +9,7 @@ interface UserProfile {
 }
 
 const DashboardApp = () => {
-  const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [activeSection, setActiveSection] = useState("Home");
-
-  useEffect(() => {
-    loadQuizResults();
-  }, []);
-
-  const loadQuizResults = async () => {
-    try {
-      const resultsString = await AsyncStorage.getItem('quizResults');
-      if (resultsString) {
-        const results = JSON.parse(resultsString);
-        setQuizResults(results);
-      }
-    } catch (error) {
-      console.error('Error loading quiz results:', error);
-    }
-  };
 
   const renderSection = () => {
     switch (activeSection) {
@@ -50,7 +25,7 @@ const DashboardApp = () => {
   const HomeSection = () => (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>BSMS Physiology Quiz</Text>
+        <Text style={styles.headerTitle}>BSMS Physiology</Text>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity 
             style={styles.button}
@@ -69,33 +44,17 @@ const DashboardApp = () => {
         </View>
       </View>
       
-      <ScrollView style={styles.resultsContainer}>
-        <View style={styles.contentContainer}>
-          <Link href="/quiz/general" style={styles.startButton}>
-            <Text style={styles.startButtonText}>Start Quiz</Text>
+      <View style={styles.contentContainer}>
+        <Image
+          source={require('../../assets/images/PinkLogo.png')}
+          style={styles.dashboardImage}
+        />
+        <View style={styles.buttonContainer}>
+          <Link href="/quiz/general" style={styles.navigationButton}>
+            <Text style={styles.buttonText}>Start Quiz</Text>
           </Link>
         </View>
-
-        <Text style={styles.resultsTitle}>Your Quiz Results</Text>
-        {quizResults.length === 0 ? (
-          <Text style={styles.noResults}>No quiz results yet. Take a quiz to see your results here!</Text>
-        ) : (
-          quizResults.map((result, index) => (
-            <View key={index} style={styles.resultCard}>
-              <Text style={styles.category}>{result.category}</Text>
-              <Text style={styles.score}>
-                Score: {result.score} / {result.totalQuestions}
-              </Text>
-              <Text style={styles.date}>
-                {new Date(result.date).toLocaleDateString()}
-              </Text>
-              <Text style={styles.percentage}>
-                {Math.round((result.score / result.totalQuestions) * 100)}% Correct
-              </Text>
-            </View>
-          ))
-        )}
-      </ScrollView>
+      </View>
     </View>
   );
 
@@ -136,6 +95,10 @@ const DashboardApp = () => {
         <Icon name="settings" size={80} color="#3498db" />
         <Text style={styles.contentText}>Notifications: On</Text>
         <Text style={styles.contentText}>Theme: Light</Text>
+        <Image
+          source={require('../../assets/images/PinkLogo.png')}
+          style={styles.dashboardImage}
+        />
       </View>
     </View>
   );
@@ -207,10 +170,6 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
-  resultsContainer: {
-    flex: 1,
-    padding: 16,
-  },
   contentText: {
     fontSize: 16,
     marginBottom: 10,
@@ -232,69 +191,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  startButton: {
+  dashboardImage: {
+    width: 200,
+    height: 200,
+    resizeMode: 'contain',
+    marginVertical: 20,
+  },
+  navigationButton: {
     backgroundColor: '#00679A',
     padding: 15,
     borderRadius: 10,
+    marginTop: 20,
     width: '80%',
     alignItems: 'center',
   },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  resultsTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#7F1C3E',
-    marginTop: 20,
-  },
-  noResults: {
-    textAlign: 'center',
-    color: '#666',
-    marginTop: 20,
-    fontSize: 16,
-  },
-  resultCard: {
-    backgroundColor: '#f8f8f8',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  category: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  score: {
-    fontSize: 16,
-    color: '#7F1C3E',
-    marginBottom: 4,
-    fontWeight: '500',
-  },
-  date: {
-    color: '#666',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  percentage: {
-    fontSize: 16,
-    color: '#28a745',
-    fontWeight: '500',
+  buttonContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    height: 200,
   },
 });
 
