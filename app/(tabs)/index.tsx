@@ -56,8 +56,8 @@ const DashboardApp = () => {
           style={styles.dashboardImage}
         />
         <View style={styles.buttonContainer}>
-          <Link href="/quiz/general" style={styles.navigationButton}>
-            <Text style={styles.buttonText}>Start Quiz</Text>
+          <Link href="/Topics" style={styles.navigationButton}>
+            <Text style={styles.buttonText}>Topics</Text>
           </Link>
         </View>
       </View>
@@ -85,6 +85,7 @@ const DashboardApp = () => {
           <Text style={styles.contentText}>Email: {user.email}</Text>
           <TouchableOpacity style={styles.button1}>
             <Text style={styles.buttonText}>Edit Profile</Text>
+            
           </TouchableOpacity>
         </View>
       </View>
