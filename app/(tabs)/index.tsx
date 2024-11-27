@@ -39,6 +39,8 @@ const DashboardApp = () => {
           >
             <Icon name="person" size={24} color="#fff" />
             <Text style={styles.buttonText}>Profile</Text>
+            <View style={styles.buttonContainer}>
+        </View>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.button}
@@ -52,7 +54,7 @@ const DashboardApp = () => {
       
       <View style={styles.contentContainer}>
         <Image
-          source={require('../../assets/images/PinkLogo.png')}
+          source={require('../../assets/images/physiologyLogo.png')}
           style={styles.dashboardImage}
         />
         <View style={styles.buttonContainer}>
@@ -85,7 +87,8 @@ const DashboardApp = () => {
           <Text style={styles.contentText}>Email: {user.email}</Text>
           <TouchableOpacity style={styles.button1}>
             <Text style={styles.buttonText}>Edit Profile</Text>
-            
+            <Link href="/screens/EditProfileScreen" style={styles.navigationButton}>
+          </Link>
           </TouchableOpacity>
         </View>
       </View>
@@ -127,15 +130,15 @@ const DashboardApp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#7F1C3E',
   },
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',
   },
   headerContainer: {
-    backgroundColor: "#7F1C3E",
-    padding: 20,
+    backgroundColor: "#00679A",
+    //padding: 5,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -180,7 +183,7 @@ const styles = StyleSheet.create({
   contentText: {
     fontSize: 16,
     marginBottom: 10,
-    color: "#333",
+    color: "#fff",
   },
   profilePicture: {
     width: 120,

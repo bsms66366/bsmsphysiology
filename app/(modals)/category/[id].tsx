@@ -23,6 +23,13 @@ export default function CategoryScreen() {
       >
         <Text style={styles.buttonText}>Start Quiz</Text>
       </Pressable>
+
+      <Pressable 
+        style={[styles.button, styles.backButton]} 
+        onPress={() => router.push('/(tabs)/quiz-results')}
+      >
+        <Text style={styles.buttonText}>Back to Results</Text>
+      </Pressable>
       {/* Add your category content here */}
     </View>
   );
@@ -50,5 +57,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  backButton: {
+    backgroundColor: '#00679A',
+    marginTop: 10,
   },
 });

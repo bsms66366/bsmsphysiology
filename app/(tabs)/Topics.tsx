@@ -36,28 +36,64 @@ const App = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {iconsWithLabels.map(({ Icon, label }, index) => (
-        <Pressable
-          key={index}
-          style={styles.iconContainer}
-          onPress={() => handleCategoryPress(label)}
+    <View style={styles.mainContainer}>
+      <View style={styles.header}>
+        <Pressable 
+          style={styles.backButton}
+          onPress={() => router.push('/(tabs)/quiz-results')}
         >
-          <Icon width={120} height={120} />
-          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.backButtonText}>← Back to Results</Text>
         </Pressable>
-      ))}
-    </ScrollView>
+        <Text style={styles.headerTitle}>Topics</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.container}>
+        {iconsWithLabels.map(({ Icon, label }, index) => (
+          <Pressable
+            key={index}
+            style={styles.iconContainer}
+            onPress={() => handleCategoryPress(label)}
+          >
+            <Icon width={120} height={120} />
+            <Text style={styles.label}>{label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#7F1C3E',
+  },
+  header: {
+    backgroundColor: '#00679A',
+    padding: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  backButton: {
+    paddingVertical: 8,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
     padding: 10,
-    backgroundColor: '#7F1C3E',
   },
   iconContainer: {
     width: '45%',
