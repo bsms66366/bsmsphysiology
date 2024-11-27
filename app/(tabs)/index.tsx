@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Link } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UserProfile {
   name: string;
@@ -10,6 +11,11 @@ interface UserProfile {
 
 const DashboardApp = () => {
   const [activeSection, setActiveSection] = useState("Home");
+
+  useEffect(() => {
+    // Clear AsyncStorage
+    AsyncStorage.clear();
+  }, []);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -96,7 +102,7 @@ const DashboardApp = () => {
         <Text style={styles.contentText}>Notifications: On</Text>
         <Text style={styles.contentText}>Theme: Light</Text>
         <Image
-          source={require('../../assets/images/PinkLogo.png')}
+          source={require('../../assets/images/icon1.svg')}
           style={styles.dashboardImage}
         />
       </View>
