@@ -4,9 +4,15 @@ import { useLocalSearchParams, router } from 'expo-router';
 import axios from 'axios';
 
 interface Question {
+  id: number;
   question: string;
-  options: string[];
-  correctAnswer: number;
+  option_1: string;
+  option_2: string;
+  option_3: string;
+  option_4: string;
+  answer: string;
+  explanation: string;
+  category_id: number;
 }
 
 interface Category {
@@ -46,7 +52,10 @@ export default function QuizScreen() {
     axios
       .get<Question[]>("https://placements.bsms.ac.uk/api/physquiz")
       .then((response) => {
-        setQuestions(response.data);
+        console.log('API Response:', response.data);
+        // Check if response.data is an array or has a questions property
+        const questionData = Array.isArray(response.data) ? response.data : response.data.questions;
+        setQuestions(questionData);
       })
       .catch((error) => {
         console.error("Error fetching quiz data:", error);
@@ -57,8 +66,10 @@ export default function QuizScreen() {
       });
   }, [category]);
 
+  console.log('Current Question:', questions[currentQuestion]);
+
   const handleAnswerClick = async (selectedOption: number) => {
-    if (questions[currentQuestion]?.correctAnswer === selectedOption) {
+    if (questions[currentQuestion]?.answer === String(selectedOption + 1)) {
       setScore(score + 1);
     }
 
@@ -146,7 +157,12 @@ export default function QuizScreen() {
       </Text>
       
       <View style={styles.optionsContainer}>
-        {questions[currentQuestion]?.options?.map((option, index) => (
+        {questions[currentQuestion] && [
+          questions[currentQuestion].option_1,
+          questions[currentQuestion].option_2,
+          questions[currentQuestion].option_3,
+          questions[currentQuestion].option_4,
+        ].map((option, index) => (
           <Pressable
             key={index}
             style={styles.optionButton}
@@ -191,13 +207,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   optionButton: {
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#f0f0f0',
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   optionText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
   },
   button: {
