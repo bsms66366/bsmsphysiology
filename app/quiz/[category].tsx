@@ -117,7 +117,7 @@ export default function QuizScreen() {
   };
 
   const handleBack = () => {
-    router.back();
+    router.push('/(tabs)/quiz-results');
   };
 
   if (loading) {
@@ -162,7 +162,7 @@ export default function QuizScreen() {
           <Text style={styles.buttonText}>Try Again</Text>
         </Pressable>
         <Pressable style={[styles.button, styles.secondaryButton]} onPress={handleBack}>
-          <Text style={styles.buttonText}>Back to Category</Text>
+          <Text style={styles.buttonText}>Back to Results</Text>
         </Pressable>
       </View>
     );

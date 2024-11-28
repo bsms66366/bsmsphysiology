@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFontSize } from '../../context/FontSizeContext';
 
 import PhysiologyLogo from '../../assets/images/physiologyLogo.svg';
-import CategoryQuizCount from '../screens/CategoryQuizCount';
 
 interface UserProfile {
   name: string;
@@ -45,8 +44,6 @@ const DashboardApp = () => {
         return <ProfileSection onBack={() => setActiveSection("Home")} />;
       case "Settings":
         return <SettingsSection onBack={() => setActiveSection("Home")} />;
-      case "CategoryQuizCount":
-        return <CategoryQuizCount onBack={() => setActiveSection("Home")} />;
       default:
         return <HomeSection />;
     }
@@ -71,13 +68,6 @@ const DashboardApp = () => {
             <Icon name="settings" size={24} color="#fff" />
             <Text style={[styles.buttonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Settings</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => setActiveSection("CategoryQuizCount")}
-          >
-            <Icon name="list" size={24} color="#fff" />
-            <Text style={[styles.buttonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Category Quiz Count</Text>
-          </TouchableOpacity>
         </View>
       </View>
       
@@ -91,8 +81,8 @@ const DashboardApp = () => {
           <Link href="/Topics" style={styles.navigationButton}>
             <Text style={[styles.buttonText, { fontSize }]}>Topics</Text>
           </Link>
-          <Link href="/screens/QuizResults" style={[styles.navigationButton, { marginTop: 10 }]}>  
-            <Text style={[styles.buttonText, { fontSize }]}>Results</Text>
+          <Link href="/screens/FlashcardPage" style={[styles.navigationButton, { marginTop: 10 }]}>  
+            <Text style={[styles.buttonText, { fontSize }]}>Flash Cards</Text>
           </Link>
         </View>
       </View>
