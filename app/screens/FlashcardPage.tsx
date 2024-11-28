@@ -1,20 +1,38 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import axios from 'axios';
 
 interface Flashcard {
   question: string;
   answer: string;
+  image?: string;
 }
 
-const flashcards: Flashcard[] = [
-  { question: 'What is the powerhouse of the cell?', answer: 'The mitochondria' },
-  { question: 'What is the chemical symbol for water?', answer: 'H2O' },
-  // Add more flashcards as needed
-];
-
 const FlashcardPage: React.FC = () => {
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFlashcards = async () => {
+      try {
+        const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
+        const flashcardsData = response.data.map(item => ({
+          question: item.question,
+          answer: item.answer,
+          image: item.image
+        }));
+        setFlashcards(flashcardsData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching flashcards:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchFlashcards();
+  }, []);
 
   const handleNext = () => {
     setShowAnswer(false);
@@ -25,9 +43,20 @@ const FlashcardPage: React.FC = () => {
     setShowAnswer((prevShowAnswer) => !prevShowAnswer);
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#00679A" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
+        {flashcards[currentIndex].image && (
+          <Image source={{ uri: flashcards[currentIndex].image }} style={styles.image} />
+        )}
         <Text style={styles.text}>
           {showAnswer ? flashcards[currentIndex].answer : flashcards[currentIndex].question}
         </Text>
@@ -47,7 +76,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#7F1C3E',
   },
   card: {
     width: '80%',
@@ -62,6 +91,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+  },
+  image: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'contain',
+    marginBottom: 10,
   },
   text: {
     fontSize: 18,
