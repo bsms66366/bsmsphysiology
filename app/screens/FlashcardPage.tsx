@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, StatusBar } from 'react-native';
 import axios from 'axios';
 
 interface Flashcard {
@@ -46,6 +46,7 @@ const FlashcardPage: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
+        <StatusBar hidden={true} />
         <ActivityIndicator size="large" color="#00679A" />
       </View>
     );
@@ -53,6 +54,10 @@ const FlashcardPage: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden={true} />
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Flashcards</Text>
+      </View>
       <View style={styles.card}>
         {flashcards[currentIndex].image && (
           <Image source={{ uri: flashcards[currentIndex].image }} style={styles.image} />
@@ -77,6 +82,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#7F1C3E',
+  },
+  headerContainer: {
+    backgroundColor: "#00679A",
+    padding: 15,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
   },
   card: {
     width: '80%',
