@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import { FontSizeProvider } from '../context/FontSizeContext';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -35,24 +36,24 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <FontSizeProvider>
+        {/* Root Stack Navigator */}
+        <Stack>
+          {/* Tabs Layout */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-    {/* Root Stack Navigator */}
-    <Stack>
-      {/* Tabs Layout */}
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-      {/* Profile and Edit Profile Screens */}
-        {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
-        <Stack.Screen name="/screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
+          {/* Profile and Edit Profile Screens */}
+          {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
+          <Stack.Screen name="/screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
 
 
-      {/* Category and Quiz screens */}
-     
-        
-      <Stack.Screen name="/screens/QuizQuestions" options={{ title: 'Questions' }} />
-       {/* Default not-found screen  */}
-      {/*<Stack.Screen name="+not-found" />*/}
-    </Stack>
-  </ThemeProvider>
+          {/* Category and Quiz screens */}
+         
+          <Stack.Screen name="/screens/QuizQuestions" options={{ title: 'Questions' }} />
+          {/* Default not-found screen  */}
+          {/*<Stack.Screen name="+not-found" />*/}
+        </Stack>
+      </FontSizeProvider>
+    </ThemeProvider>
   );
 }

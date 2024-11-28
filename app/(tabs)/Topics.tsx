@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet, ScrollView, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import { useFontSize } from '../../context/FontSizeContext';
 
 // Import SVG Icons
 import Icon1 from '@/assets/images/icon1.svg';
@@ -15,6 +16,8 @@ import Icon9 from '@/assets/images/icon9.svg';
 import Icon10 from '@/assets/images/icon10.svg';
 
 const App = () => {
+  const { fontSize } = useFontSize();
+
   const iconsWithLabels = [
     { Icon: Icon1, label: 'Core concepts' },
     { Icon: Icon2, label: 'Cells Environment' },
@@ -42,9 +45,9 @@ const App = () => {
           style={styles.backButton}
           onPress={() => router.push('/(tabs)/quiz-results')}
         >
-          <Text style={styles.backButtonText}>← Back to Results</Text>
+          <Text style={[styles.backButtonText, { fontSize }]}>← Back to Results</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Topics</Text>
+        <Text style={[styles.headerTitle, { fontSize: fontSize + 4 }]}>Topics</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
@@ -55,7 +58,7 @@ const App = () => {
             onPress={() => handleCategoryPress(label)}
           >
             <Icon width={80} height={80} />
-            <Text style={styles.label}>{label}</Text>
+            <Text style={[styles.label, { fontSize }]}> {label}</Text>
           </Pressable>
         ))}
       </ScrollView>

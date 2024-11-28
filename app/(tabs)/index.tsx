@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, usePathname } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFontSize } from '../../context/FontSizeContext';
+
+import PhysiologyLogo from '../../assets/images/physiologyLogo.svg';
+import CategoryQuizCount from '../screens/CategoryQuizCount';
 
 interface UserProfile {
   name: string;
@@ -11,11 +15,29 @@ interface UserProfile {
 
 const DashboardApp = () => {
   const [activeSection, setActiveSection] = useState("Home");
+  const [user, setUser] = useState<UserProfile>({ name: '', email: '' });
+  const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
+  const { fontSize } = useFontSize();
 
+  const loadUserProfile = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        setUser(parsedData);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      setIsLoading(false);
+    }
+  };
+
+  // Load profile data when component mounts and when pathname changes
   useEffect(() => {
-    // Clear AsyncStorage
-    AsyncStorage.clear();
-  }, []);
+    loadUserProfile();
+  }, [pathname]);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -23,6 +45,8 @@ const DashboardApp = () => {
         return <ProfileSection onBack={() => setActiveSection("Home")} />;
       case "Settings":
         return <SettingsSection onBack={() => setActiveSection("Home")} />;
+      case "CategoryQuizCount":
+        return <CategoryQuizCount onBack={() => setActiveSection("Home")} />;
       default:
         return <HomeSection />;
     }
@@ -31,90 +55,130 @@ const DashboardApp = () => {
   const HomeSection = () => (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={[styles.headerTitle, { marginTop: 10 }]}>BSMS Physiology</Text>
+        <Text style={[styles.headerTitle, { fontSize, marginTop: 10 }]}>BSMS Physiology</Text>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity 
             style={styles.button}
             onPress={() => setActiveSection("Profile")}
           >
             <Icon name="person" size={24} color="#fff" />
-            <Text style={styles.buttonText}>Profile</Text>
+            <Text style={[styles.buttonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Profile</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.button}
             onPress={() => setActiveSection("Settings")}
           >
             <Icon name="settings" size={24} color="#fff" />
-            <Text style={styles.buttonText}>Settings</Text>
+            <Text style={[styles.buttonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={() => setActiveSection("CategoryQuizCount")}
+          >
+            <Icon name="list" size={24} color="#fff" />
+            <Text style={[styles.buttonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Category Quiz Count</Text>
           </TouchableOpacity>
         </View>
       </View>
       
       <View style={styles.contentContainer}>
-        <Image
-          source={require('../../assets/images/physiologyLogo.png')}
+        <PhysiologyLogo 
+          width={300} 
+          height={300} 
           style={styles.dashboardImage}
         />
         <View style={styles.buttonContainer}>
           <Link href="/Topics" style={styles.navigationButton}>
-            <Text style={styles.buttonText}>Topics</Text>
+            <Text style={[styles.buttonText, { fontSize }]}>Topics</Text>
+          </Link>
+          <Link href="/screens/QuizResults" style={[styles.navigationButton, { marginTop: 10 }]}>  
+            <Text style={[styles.buttonText, { fontSize }]}>Results</Text>
           </Link>
         </View>
       </View>
     </View>
   );
 
-  const ProfileSection = ({ onBack }: { onBack: () => void }) => {
-    const user: UserProfile = {
-      name: "John Doe",
-      email: "john@example.com"
-    };
+  const ProfileSection = ({ onBack }: { onBack: () => void }) => (
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        {renderBackButton(onBack)}
+        <Text style={[styles.headerTitle, { fontSize }]}>Profile</Text>
+      </View>
+      <View style={styles.profileContainer}>
+        <Image
+          source={require('../../assets/images/profile.png')}
+          style={styles.profilePicture}
+        />
+        {isLoading ? (
+          <Text style={[styles.contentText, { fontSize }]}>Loading...</Text>
+        ) : (
+          <>
+            <Text style={[styles.contentText, { fontSize }]}>Name: {user.name || 'Not set'}</Text>
+            <Text style={[styles.contentText, { fontSize }]}>Email: {user.email || 'Not set'}</Text>
+          </>
+        )}
+        <TouchableOpacity style={styles.button1}>
+          <Link href="/screens/EditProfileScreen" style={styles.navigationButton}>
+            <Text style={[styles.buttonText, { fontSize }]}>Edit Profile</Text>
+          </Link>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
+  const SettingsSection = ({ onBack }: { onBack: () => void }) => {
+    const { fontSize, increaseFontSize, decreaseFontSize, resetFontSize } = useFontSize();
+    
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
           {renderBackButton(onBack)}
-          <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={[styles.headerTitle, { fontSize }]}>Settings</Text>
         </View>
-        <View style={styles.contentContainer}>
-          <Image
-            source={{ uri: "https://via.placeholder.com/120" }}
-            style={styles.profilePicture}
-          />
-          <Text style={styles.contentText}>Name: {user.name}</Text>
-          <Text style={styles.contentText}>Email: {user.email}</Text>
-          <TouchableOpacity style={styles.button1}>
-            <Text style={styles.buttonText}>Edit Profile</Text>
-            <Link href="/screens/EditProfileScreen" style={styles.navigationButton}>
-          </Link>
+        <View style={styles.settingsContainer}>
+          <Text style={[styles.settingTitle, { fontSize }]}>Text Size</Text>
+          <Text style={[styles.settingDescription, { fontSize: Math.max(fontSize - 2, 12) }]}>
+            Adjust the text size for better readability
+          </Text>
+          
+          <View style={styles.fontSizeControls}>
+            <TouchableOpacity 
+              style={styles.fontSizeButton} 
+              onPress={decreaseFontSize}
+            >
+              <Text style={styles.fontSizeButtonText}>A-</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.fontSizeDisplay}>
+              <Text style={[styles.fontSizeText, { fontSize }]}>{fontSize}px</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.fontSizeButton} 
+              onPress={increaseFontSize}
+            >
+              <Text style={styles.fontSizeButtonText}>A+</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity 
+            style={styles.resetButton} 
+            onPress={resetFontSize}
+          >
+            <Text style={[styles.resetButtonText, { fontSize: Math.max(fontSize - 2, 12) }]}>
+              Reset to Default
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   };
 
-  const SettingsSection = ({ onBack }: { onBack: () => void }) => (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        {renderBackButton(onBack)}
-        <Text style={styles.headerTitle}>Settings</Text>
-      </View>
-      <View style={styles.contentContainer}>
-        <Icon name="settings" size={80} color="#3498db" />
-        <Text style={styles.contentText}>Notifications: On</Text>
-        <Text style={styles.contentText}>Theme: Light</Text>
-        <Image
-          source={require('../../assets/images/icon1.svg')}
-          style={styles.dashboardImage}
-        />
-      </View>
-    </View>
-  );
-
   const renderBackButton = (onBack: () => void) => (
     <TouchableOpacity onPress={onBack} style={styles.backButton}>
       <Icon name="arrow-back" size={24} color="#fff" />
-      <Text style={styles.backButtonText}>Back</Text>
+      <Text style={[styles.backButtonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Back</Text>
     </TouchableOpacity>
   );
 
@@ -179,6 +243,10 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
+  profileContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
   contentText: {
     fontSize: 16,
     marginBottom: 10,
@@ -201,23 +269,79 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   dashboardImage: {
-    width: 150,
-    height: 150,
+    width: 250,
+    height: 250,
     resizeMode: 'contain',
     marginVertical: 15,
   },
   navigationButton: {
     backgroundColor: '#00679A',
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 20,
-    width: '80%',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     alignItems: 'center',
+    marginHorizontal: 5,
   },
   buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'space-around',
-    height: 200,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end', 
+    marginTop: 10,
+  },
+  settingsContainer: {
+    padding: 20,
+  },
+  settingTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  settingDescription: {
+    color: '#ccc',
+    marginBottom: 20,
+  },
+  fontSizeControls: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  fontSizeButton: {
+    backgroundColor: '#00679A',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 10,
+  },
+  fontSizeButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  fontSizeDisplay: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  fontSizeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  resetButton: {
+    backgroundColor: '#666',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
