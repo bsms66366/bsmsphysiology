@@ -12,6 +12,25 @@ interface QuizResult {
   date: string;
 }
 
+// Category ID to name mapping
+const categoryMap: { [key: string]: string } = {
+  '44': 'Core Concepts',
+  '45': 'Cells Environment',
+  '46': 'Nervous System',
+  '48': 'Endocrine Regulation',
+  '54': 'Musculoskeletal System',
+  '49': 'Heart and Circulation',
+  '50': 'Kidney and Urinary System',
+  '51': 'Lungs and Gas Exchange',
+  '52': 'Gastrointestinal System',
+  '53': 'Reproductive System'
+};
+
+// Function to get category name from ID
+const getCategoryName = (categoryId: string): string => {
+  return categoryMap[categoryId] || categoryId;
+};
+
 const QuizResultsScreen = () => {
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
 
@@ -52,7 +71,7 @@ const QuizResultsScreen = () => {
         ) : (
           quizResults.map((result, index) => (
             <View key={index} style={styles.resultCard}>
-              <Text style={styles.category}>{result.category}</Text>
+              <Text style={styles.category}>{getCategoryName(result.category)}</Text>
               <Text style={styles.score}>
                 Score: {result.score} / {result.totalQuestions}
               </Text>
