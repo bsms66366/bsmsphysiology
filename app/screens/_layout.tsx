@@ -19,6 +19,12 @@ export default function ScreensLayout() {
           title: "Quiz",
         }}
       />
+      <Stack.Screen
+        name="FlashcardPage"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

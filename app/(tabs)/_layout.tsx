@@ -33,6 +33,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="flashcards"
+        options={{
+          title: 'Flashcards',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'albums' : 'albums-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="quiz-results"
         options={{
           title: 'Results',
