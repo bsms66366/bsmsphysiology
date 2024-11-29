@@ -15,6 +15,13 @@ const FlashcardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    StatusBar.setHidden(true);
+    return () => {
+      StatusBar.setHidden(false);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchFlashcards = async () => {
       try {
         const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
@@ -46,7 +53,6 @@ const FlashcardPage: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <StatusBar hidden={true} />
         <ActivityIndicator size="large" color="#00679A" />
       </View>
     );

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import Option from '../../components/Option';
+import { useFontSize } from '../../context/FontSizeContext';
 
 interface Question {
   id: number;
@@ -16,11 +18,6 @@ interface Question {
   category_id: number;
 }
 
-interface Category {
-  id: number;
-  name: string;
-}
-
 interface QuizResult {
   category: string;
   score: number;
@@ -30,169 +27,200 @@ interface QuizResult {
 
 export default function QuizScreen() {
   const { category } = useLocalSearchParams();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showScore, setShowScore] = useState(false);
+  const categoryStr = category as string;
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [explanation, setExplanation] = useState("");
+  const [percentageComplete, setPercentageComplete] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>([]);
+  const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
+  const { fontSize } = useFontSize();
 
   useEffect(() => {
-    // Fetch categories
-    setLoading(true);
-    setError(null);
-    axios
-      .get<Category[]>("https://placements.bsms.ac.uk/api/categories")
-      .then((response) => {
-        setCategories(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-        setError("Failed to load categories");
-      });
-  }, []);
-
-  useEffect(() => {
-    // Fetch questions
-    setLoading(true);
-    setError(null);
-    axios
-      .get<Question[]>("https://placements.bsms.ac.uk/api/physquiz")
-      .then((response) => {
-        console.log('API Response:', response.data);
-        // Check if response.data is an array or has a questions property
-        const questionData = Array.isArray(response.data) ? response.data : response.data.questions;
-        setQuestions(questionData);
-      })
-      .catch((error) => {
-        console.error("Error fetching quiz data:", error);
-        setError("Failed to load questions");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [category]);
-
-  console.log('Current Question:', questions[currentQuestion]);
-
-  const handleAnswerClick = async (selectedOption: number) => {
-    if (questions[currentQuestion]?.answer === String(selectedOption + 1)) {
-      setScore(score + 1);
-    }
-
-    const nextQuestion = currentQuestion + 1;
-    if (nextQuestion < questions.length) {
-      setCurrentQuestion(nextQuestion);
-    } else {
-      setShowScore(true);
-      // Save results locally
+    const fetchQuestions = async () => {
       try {
-        const result: QuizResult = {
-          category: category as string,
-          score: score + 1,
-          totalQuestions: questions.length,
-          date: new Date().toISOString()
-        };
-
-        // Get existing results
-        const existingResultsString = await AsyncStorage.getItem('quizResults');
-        const existingResults = existingResultsString ? JSON.parse(existingResultsString) : [];
-        
-        // Add new result
-        const updatedResults = [...existingResults, result];
-        
-        // Save back to storage
-        await AsyncStorage.setItem('quizResults', JSON.stringify(updatedResults));
+        console.log('Fetching questions for category:', categoryStr);
+        const response = await axios.get<Question[]>("https://placements.bsms.ac.uk/api/physquiz");
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          setQuestions(response.data);
+        } else {
+          console.log('Invalid API response format:', response.data);
+          Alert.alert('Error', 'Failed to load questions. Please try again.');
+        }
       } catch (error) {
-        console.error("Error saving quiz results locally:", error);
+        console.error("Error fetching quiz data:", error);
+        Alert.alert('Error', 'Failed to load questions. Please check your connection.');
       }
+    };
+
+    if (categoryStr) {
+      fetchQuestions();
+    } else {
+      Alert.alert('Error', 'No category selected', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    }
+  }, [categoryStr]);
+
+  useEffect(() => {
+    if (!categoryStr || !questions.length) return;
+    
+    const filtered = questions.filter(q => 
+      q.category_id.toString() === categoryStr.toString()
+    );
+
+    if (filtered.length === 0) {
+      Alert.alert('No Questions', 'No questions found for this category.');
+      return;
+    }
+
+    setFilteredQuestions(filtered);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setShowResult(false);
+    setSelectedOption(null);
+    setSelectedAnswers([]);
+    setExplanation("");
+    setPercentageComplete(0);
+  }, [categoryStr, questions]);
+
+  const getCurrentQuestion = () => {
+    if (!filteredQuestions.length || currentQuestionIndex >= filteredQuestions.length) {
+      return null;
+    }
+    return filteredQuestions[currentQuestionIndex];
+  };
+
+  const handleOptionSelect = (option: string) => {
+    if (selectedOption) return;
+
+    const currentQuestion = getCurrentQuestion();
+    if (!currentQuestion) return;
+
+    const newAnswers = [...selectedAnswers];
+    newAnswers[currentQuestionIndex] = option;
+    setSelectedAnswers(newAnswers);
+    setSelectedOption(option);
+
+    const normalizedOption = option.trim().toLowerCase();
+    const normalizedAnswer = currentQuestion.answer.trim().toLowerCase();
+    const correct = normalizedOption === normalizedAnswer;
+
+    setIsAnswerCorrect(correct);
+    if (correct) {
+      setScore(prevScore => prevScore + 1);
+    }
+
+    setExplanation(currentQuestion.explanation);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex === filteredQuestions.length - 1) {
+      setShowResult(true);
+      saveQuizResult();
+    } else {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setSelectedOption(null);
+      setExplanation("");
+      setIsAnswerCorrect(null);
+      const newPercentage = ((currentQuestionIndex + 1) / filteredQuestions.length) * 100;
+      setPercentageComplete(newPercentage);
     }
   };
 
-  const handleRetry = () => {
-    setCurrentQuestion(0);
-    setScore(0);
-    setShowScore(false);
+  const saveQuizResult = async () => {
+    try {
+      const quizResult: QuizResult = {
+        category: categoryStr,
+        score,
+        totalQuestions: filteredQuestions.length,
+        date: new Date().toISOString(),
+      };
+
+      const existingResultsStr = await AsyncStorage.getItem('quizResults');
+      const existingResults = existingResultsStr ? JSON.parse(existingResultsStr) : [];
+      const updatedResults = [...existingResults, quizResult];
+      await AsyncStorage.setItem('quizResults', JSON.stringify(updatedResults));
+    } catch (error) {
+      console.error('Error saving quiz result:', error);
+    }
   };
 
-  const handleBack = () => {
-    router.push('/(tabs)/quiz-results');
-  };
+  const currentQuestion = getCurrentQuestion();
 
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#7F1C3E" />
-        <Text style={styles.loadingText}>Loading quiz...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Pressable style={styles.button} onPress={handleBack}>
-          <Text style={styles.buttonText}>Go Back</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  if (questions.length === 0) {
+  if (!currentQuestion) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>No questions available yet.</Text>
-        <Pressable style={styles.button} onPress={handleBack}>
-          <Text style={styles.buttonText}>Go Back</Text>
-        </Pressable>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
 
-  if (showScore) {
+  if (showResult) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Quiz Complete!</Text>
-        <Text style={styles.scoreText}>
-          You scored {score} out of {questions.length}
+      <ScrollView style={styles.container}>
+        <Text style={[styles.resultText, { fontSize: fontSize }]}>
+          Quiz Complete!{'\n'}
+          Score: {score} out of {filteredQuestions.length}
         </Text>
-        <Pressable style={styles.button} onPress={handleRetry}>
-          <Text style={styles.buttonText}>Try Again</Text>
-        </Pressable>
-        <Pressable style={[styles.button, styles.secondaryButton]} onPress={handleBack}>
-          <Text style={styles.buttonText}>Back to Results</Text>
-        </Pressable>
-      </View>
+        <Text style={[styles.resultText, { fontSize: fontSize - 2 }]}>
+          Percentage: {((score / filteredQuestions.length) * 100).toFixed(1)}%
+        </Text>
+      </ScrollView>
     );
   }
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.questionCount}>
-        Question {currentQuestion + 1}/{questions.length}
+      <Text style={[styles.progressText, { fontSize: fontSize - 4 }]}>
+        Question {currentQuestionIndex + 1} of {filteredQuestions.length}
       </Text>
-      <Text style={styles.question}>
-        {questions[currentQuestion]?.question || 'Loading question...'}
+      <Text style={[styles.questionText, { fontSize: fontSize }]}>
+        {currentQuestion.question}
       </Text>
-      
-      <View style={styles.optionsContainer}>
-        {questions[currentQuestion] && [
-          questions[currentQuestion].option_1,
-          questions[currentQuestion].option_2,
-          questions[currentQuestion].option_3,
-          questions[currentQuestion].option_4,
-        ].map((option, index) => (
-          <Pressable
+
+      {[
+        currentQuestion.option_1,
+        currentQuestion.option_2,
+        currentQuestion.option_3,
+        currentQuestion.option_4
+      ].map((option, index) => (
+        option && (
+          <Option
             key={index}
-            style={styles.optionButton}
-            onPress={() => handleAnswerClick(index)}
-          >
-            <Text style={styles.optionText}>{option}</Text>
-          </Pressable>
-        ))}
-      </View>
+            text={option}
+            onPress={() => handleOptionSelect(option)}
+            selected={selectedOption === option}
+            disabled={!!selectedOption}
+            correct={selectedOption && option.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase()}
+            fontSize={fontSize - 2}
+          />
+        )
+      ))}
+
+      {explanation && (
+        <View style={styles.explanationContainer}>
+          <Text style={[styles.explanationText, { fontSize: fontSize - 2 }]}>
+            {explanation}
+          </Text>
+        </View>
+      )}
+
+      {selectedOption && (
+        <View style={styles.nextButtonContainer}>
+          <Option
+            text="Next Question"
+            onPress={handleNextQuestion}
+            selected={false}
+            disabled={false}
+            fontSize={fontSize - 2}
+          />
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -203,71 +231,30 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
+  progressText: {
     textAlign: 'center',
-  },
-  questionCount: {
-    fontSize: 16,
+    marginBottom: 20,
     color: '#666',
-    marginBottom: 8,
   },
-  question: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 24,
+  questionText: {
+    marginBottom: 20,
+    fontWeight: '500',
   },
-  optionsContainer: {
-    gap: 12,
-  },
-  optionButton: {
-    backgroundColor: '#f0f0f0',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  optionText: {
-    color: '#000',
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: '#7F1C3E',
+  explanationContainer: {
+    marginTop: 20,
     padding: 15,
+    backgroundColor: '#f8f8f8',
     borderRadius: 8,
-    alignItems: 'center',
+  },
+  explanationText: {
+    color: '#444',
+  },
+  nextButtonContainer: {
     marginTop: 20,
   },
-  secondaryButton: {
-    backgroundColor: '#666',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scoreText: {
-    fontSize: 20,
+  resultText: {
     textAlign: 'center',
-    marginVertical: 20,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorText: {
-    color: '#dc3545',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 16,
+    marginTop: 20,
+    fontWeight: '500',
   },
 });

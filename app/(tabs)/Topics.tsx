@@ -4,37 +4,38 @@ import { router } from 'expo-router';
 import { useFontSize } from '../../context/FontSizeContext';
 
 // Import SVG Icons
-import Icon1 from '@/assets/images/icon1.svg';
-import Icon2 from '@/assets/images/icon2.svg';
-import Icon3 from '@/assets/images/icon3.svg';
-import Icon4 from '@/assets/images/icon4.svg';
-import Icon5 from '@/assets/images/icon5.svg';
-import Icon6 from '@/assets/images/icon6.svg';
-import Icon7 from '@/assets/images/icon7.svg';
-import Icon8 from '@/assets/images/icon8.svg';
-import Icon9 from '@/assets/images/icon9.svg';
-import Icon10 from '@/assets/images/icon10.svg';
+import Icon1 from '../../assets/images/icon1.svg';
+import Icon2 from '../../assets/images/icon2.svg';
+import Icon3 from '../../assets/images/icon3.svg';
+import Icon4 from '../../assets/images/icon4.svg';
+import Icon5 from '../../assets/images/icon5.svg';
+import Icon6 from '../../assets/images/icon6.svg';
+import Icon7 from '../../assets/images/icon7.svg';
+import Icon8 from '../../assets/images/icon8.svg';
+import Icon9 from '../../assets/images/icon9.svg';
+import Icon10 from '../../assets/images/icon10.svg';
 
 const App = () => {
   const { fontSize } = useFontSize();
 
   const iconsWithLabels = [
-    { Icon: Icon1, label: 'Core concepts' },
-    { Icon: Icon2, label: 'Cells Environment' },
-    { Icon: Icon3, label: 'Nervous System' },
-    { Icon: Icon4, label: 'Endocrine Regulation' },
-    { Icon: Icon5, label: 'Musculoskeletal System' },
-    { Icon: Icon6, label: 'Heart and Circulation' },
-    { Icon: Icon7, label: 'Kidney,Urinary System' },
-    { Icon: Icon8, label: 'Lungs and Gas exchange' },
-    { Icon: Icon9, label: 'Gastrointestinal System' },
-    { Icon: Icon10, label: 'Reproductive System' },
+    { Icon: Icon1, label: 'Core Concepts', id: '44' },
+    { Icon: Icon2, label: 'Cells Environment', id: '45' },
+    { Icon: Icon3, label: 'Nervous System', id: '46' },
+    { Icon: Icon4, label: 'Endocrine Regulation', id: '48' },
+    { Icon: Icon5, label: 'Musculoskeletal System', id: '54' },
+    { Icon: Icon6, label: 'Heart and Circulation', id: '49' },
+    { Icon: Icon7, label: 'Kidney and Urinary System', id: '50' },
+    { Icon: Icon8, label: 'Lungs and Gas Exchange', id: '51' },
+    { Icon: Icon9, label: 'Gastrointestinal System', id: '52' },
+    { Icon: Icon10, label: 'Reproductive System', id: '53' },
   ];
 
-  const handleCategoryPress = (label: string) => {
+  const handleCategoryPress = (categoryId: string) => {
+    console.log('Selected category:', categoryId);
     router.push({
-      pathname: '/(modals)/category/[id]',
-      params: { id: label.toLowerCase().replace(/\s+/g, '-') }
+      pathname: '/screens/QuizQuestions',
+      params: { category: categoryId }
     });
   };
 
@@ -51,14 +52,14 @@ const App = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
-        {iconsWithLabels.map(({ Icon, label }, index) => (
+        {iconsWithLabels.map((item, index) => (
           <Pressable
             key={index}
             style={styles.iconContainer}
-            onPress={() => handleCategoryPress(label)}
+            onPress={() => handleCategoryPress(item.id)}
           >
-            <Icon width={80} height={80} />
-            <Text style={[styles.label, { fontSize }]}> {label}</Text>
+            <item.Icon width={80} height={80} />
+            <Text style={[styles.label, { fontSize }]}>{item.label}</Text>
           </Pressable>
         ))}
       </ScrollView>

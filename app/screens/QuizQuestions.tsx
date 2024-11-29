@@ -7,12 +7,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert
 } from "react-native";
 import Option from "../../components/Option";
 import axios from "axios";
 import { useFontSize } from '../../context/FontSizeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import physiologyLogo from '../../assets/images/physiologyLogo.svg';
 
 type Question = {
   question: string;
@@ -26,7 +29,8 @@ type Question = {
 };
 
 export default function QuizQuestions() {
-  const { category } = useLocalSearchParams<{ category: string }>();
+  const params = useLocalSearchParams();
+  const category = params.category as string;
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -38,52 +42,95 @@ export default function QuizQuestions() {
   const [selectedAnswers, setSelectedAnswers] = useState<(string | null)[]>([]);
   const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
   const { fontSize } = useFontSize();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchQuestions = async () => {
+      console.log('Starting fetchQuestions function');
+      console.log('Params received:', params);
+      console.log('Category from params:', category);
+      
+      if (!category) {
+        console.log('No category provided');
+        Alert.alert('Error', 'No category selected', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+        return;
+      }
+
       try {
-        console.log('Fetching questions for category:', category);
+        console.log('Making API request to fetch questions for category:', category);
         const response = await axios.get<Question[]>("https://placements.bsms.ac.uk/api/physquiz");
-        console.log('API Response:', response.data);
+        console.log('Raw API Response:', response.data);
+        console.log('API Response length:', response.data.length);
         
         if (Array.isArray(response.data) && response.data.length > 0) {
-          // Verify the structure of the first question
-          const firstQuestion = response.data[0];
-          console.log('First question structure:', firstQuestion);
+          // Log a few sample questions to see their structure
+          console.log('Sample questions from API:', response.data.slice(0, 2));
           
-          setQuestions(response.data);
+          // Filter questions by category
+          const filteredQuestions = response.data.filter(q => {
+            const questionCategoryId = q.category_id.toString();
+            const selectedCategoryId = category.toString();
+            
+            console.log('Comparing:', { 
+              questionCategory: questionCategoryId, 
+              selectedCategory: selectedCategoryId,
+              matches: questionCategoryId === selectedCategoryId 
+            });
+            return questionCategoryId === selectedCategoryId;
+          });
+          
+          console.log('Filtered questions:', filteredQuestions);
+          console.log('Filtered questions length:', filteredQuestions.length);
+          
+          if (filteredQuestions.length > 0) {
+            console.log('Setting questions state with filtered questions');
+            setQuestions(filteredQuestions);
+          } else {
+            console.log('No questions found for category:', category);
+            Alert.alert('No Questions', 'No questions found for this category.');
+            router.back();
+          }
         } else {
-          console.error('Invalid API response format:', response.data);
+          console.log('Invalid API response format:', response.data);
+          Alert.alert('Error', 'Failed to load questions. Please try again.');
         }
       } catch (error) {
         console.error("Error fetching quiz data:", error);
+        Alert.alert('Error', 'Failed to load questions. Please check your connection.');
       }
     };
 
-    if (category) {
-      fetchQuestions();
-    } else {
-      console.error('No category provided');
-      router.back();
-    }
+    fetchQuestions();
   }, [category]);
 
   useEffect(() => {
     if (!category || !questions.length) {
-      console.log('Waiting for questions or category:', {
-        hasCategory: !!category,
+      console.log('Debug - Category and Questions:', {
+        category: category,
         questionsCount: questions.length
       });
       return;
     }
     
-    console.log('Filtering questions for category:', category);
-    // Filter by category_id instead of category
-    const filtered = questions.filter(q => q.category_id.toString() === category);
-    console.log('Found questions:', filtered.length);
+    console.log('Debug - Filtering for category:', category);
+    console.log('Debug - Available categories:', questions.map(q => q.category_id));
+    
+    const filtered = questions.filter(q => {
+      const isMatch = q.category_id.toString() === category.toString();
+      console.log('Debug - Question match:', {
+        questionCategory: q.category_id,
+        targetCategory: category,
+        isMatch: isMatch
+      });
+      return isMatch;
+    });
+
+    console.log('Debug - Filtered questions count:', filtered.length);
 
     if (filtered.length === 0) {
-      console.warn('No questions found for category:', category);
+      Alert.alert('No Questions', 'No questions found for this category.');
       return;
     }
 
@@ -127,11 +174,25 @@ export default function QuizQuestions() {
     // Compare answers after normalizing
     const normalizedOption = option.trim().toLowerCase();
     const normalizedAnswer = currentQuestion.answer.trim().toLowerCase();
+    console.log('Scoring Debug:', {
+      questionNumber: currentQuestionIndex + 1,
+      selectedOption: option,
+      normalizedOption,
+      correctAnswer: currentQuestion.answer,
+      normalizedAnswer,
+      currentScore: score
+    });
+
     const correct = normalizedOption === normalizedAnswer;
+    console.log('Answer is correct:', correct);
 
     setIsAnswerCorrect(correct);
     if (correct) {
-      setScore(prevScore => prevScore + 1);
+      setScore(prevScore => {
+        const newScore = prevScore + 1;
+        console.log('Updating score from', prevScore, 'to', newScore);
+        return newScore;
+      });
     }
 
     setExplanation(currentQuestion.explanation);
@@ -155,7 +216,7 @@ export default function QuizQuestions() {
     try {
       // Save the quiz result
       const quizResult = {
-        category,
+        category: category,
         score,
         totalQuestions: filteredQuestions.length,
         date: new Date().toISOString(),
