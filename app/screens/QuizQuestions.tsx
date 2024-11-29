@@ -303,19 +303,39 @@ export default function QuizQuestions() {
         </View>
 
         <View style={styles.optionsWrapper}>
-          <TouchableOpacity
-            style={[
-              styles.answerButton,
-              selectedOption && isAnswerCorrect && styles.correctAnswer,
-              selectedOption && !isAnswerCorrect && styles.wrongAnswer
-            ]}
-            onPress={() => !selectedOption && handleOptionSelect(currentQuestion.answer)}
-            disabled={!!selectedOption}
-          >
-            <Text style={[styles.answerText, { fontSize }]}>
-              {selectedOption ? currentQuestion.answer : 'Tap to reveal answer'}
-            </Text>
-          </TouchableOpacity>
+          {[currentQuestion.option_1, currentQuestion.option_2, currentQuestion.option_3, currentQuestion.option_4, currentQuestion.answer]
+            .filter(Boolean) // Remove any undefined options
+            .sort(() => Math.random() - 0.5) // Randomize the order
+            .map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.optionButton,
+                  selectedOption === option && (
+                    option.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase()
+                      ? styles.correctAnswer
+                      : styles.wrongAnswer
+                  ),
+                  selectedOption && 
+                  option.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase() && 
+                  styles.correctAnswer
+                ]}
+                onPress={() => !selectedOption && handleOptionSelect(option)}
+                disabled={!!selectedOption}
+              >
+                <Text style={[
+                  styles.optionText,
+                  { fontSize },
+                  selectedOption === option && (
+                    option.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase()
+                      ? styles.correctAnswerText
+                      : styles.wrongAnswerText
+                  )
+                ]}>
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
         </View>
 
         {explanation && (
@@ -389,28 +409,34 @@ const styles = StyleSheet.create({
     lineHeight: 28,
   },
   optionsWrapper: {
-    marginBottom: 20,
+    padding: 20,
+    width: '100%',
   },
-  answerButton: {
+  optionButton: {
     backgroundColor: '#f0f0f0',
     padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderRadius: 10,
+    marginVertical: 8,
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  answerText: {
-    fontSize: 16,
-    color: '#333',
+  optionText: {
     textAlign: 'center',
+    color: '#333',
   },
   correctAnswer: {
-    backgroundColor: '#e8f5e9',
-    borderColor: '#4caf50',
+    backgroundColor: '#e7f4e8',
+    borderColor: '#28a745',
   },
   wrongAnswer: {
-    backgroundColor: '#ffebee',
-    borderColor: '#ef5350',
+    backgroundColor: '#fde8e8',
+    borderColor: '#dc3545',
+  },
+  correctAnswerText: {
+    color: '#28a745',
+  },
+  wrongAnswerText: {
+    color: '#dc3545',
   },
   explanationContainer: {
     backgroundColor: "#F5F5F5",
