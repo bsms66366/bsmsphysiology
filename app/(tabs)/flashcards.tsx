@@ -238,8 +238,8 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 200,
-    marginBottom: 10,
+    height: 110,
+    marginBottom: 5,
   },
   errorText: {
     color: '#fff',
