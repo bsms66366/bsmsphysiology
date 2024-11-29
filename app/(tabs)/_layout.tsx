@@ -23,7 +23,7 @@ export default function TabLayout() {
           ),
         }}
       />
-       <Tabs.Screen
+      <Tabs.Screen
         name="Topics"
         options={{
           title: 'Topics',
@@ -32,15 +32,15 @@ export default function TabLayout() {
           ),
         }}
       />
-     {/* <Tabs.Screen
-        name="QuizQuestions"
+      <Tabs.Screen
+        name="quiz-results"
         options={{
-          title: 'QuizQuestions',
+          title: 'Results',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'help-circle' : 'help-circle'} color={color} />
+            <TabBarIcon name={focused ? 'trophy' : 'trophy-outline'} color={color} />
           ),
         }}
-      /> */}
+      />
     </Tabs>
   );
 }
