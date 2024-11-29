@@ -7,8 +7,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert
-} from "react-native";
+  Alert,
+  StatusBar } from "react-native";
 import Option from "../../components/Option";
 import axios from "axios";
 import { useFontSize } from '../../context/FontSizeContext';
@@ -252,6 +252,7 @@ export default function QuizQuestions() {
   if (showResult) {
     return (
       <View style={styles.container}>
+          <StatusBar hidden={true} />
         <View style={styles.resultContainer}>
           <Text style={[styles.resultTitle, { fontSize: fontSize + 8 }]}>Quiz Complete!</Text>
           <Text style={[styles.resultScore, { fontSize: fontSize + 4 }]}>
@@ -285,6 +286,7 @@ export default function QuizQuestions() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+      <StatusBar hidden={true} />
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <View
@@ -366,7 +368,7 @@ export default function QuizQuestions() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#7F1C3E",
   },
   scrollContent: {
     flexGrow: 1,
@@ -405,7 +407,7 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 20,
     fontWeight: "500",
-    color: "#333",
+    color: "#fff",
     lineHeight: 28,
   },
   optionsWrapper: {
@@ -468,13 +470,13 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
     marginBottom: 30,
     textAlign: 'center',
   },
   resultScore: {
     fontSize: 24,
-    color: '#333',
+    color: '#fff',
     marginBottom: 10,
   },
   resultPercentage: {
@@ -496,7 +498,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   newQuizButton: {
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#00679A',
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 10,

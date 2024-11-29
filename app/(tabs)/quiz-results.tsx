@@ -73,13 +73,11 @@ const QuizResultsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#7F1C3E',
   },
   headerContainer: {
     backgroundColor: '#00679A',
     padding: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
   },
   headerTitle: {
     fontSize: 24,
@@ -96,10 +94,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   startButton: {
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#00679A',
     paddingHorizontal: 30,
     paddingVertical: 15,
-    borderRadius: 25,
+    borderRadius: 10,
     marginVertical: 20,
   },
   startButtonText: {
@@ -111,16 +109,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#333',
+    color: '#fff',
   },
   noResults: {
     textAlign: 'center',
-    color: '#666',
+    color: '#fff',
     fontSize: 16,
     marginTop: 20,
   },
   resultCard: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
@@ -139,17 +137,17 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 16,
     color: '#333',
+    marginBottom: 3,
   },
   date: {
     fontSize: 14,
     color: '#666',
-    marginTop: 5,
+    marginBottom: 3,
   },
   percentage: {
     fontSize: 16,
-    color: '#28a745',
-    fontWeight: '500',
-    marginTop: 5,
+    color: '#00679A',
+    fontWeight: 'bold',
   },
 });
 

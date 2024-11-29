@@ -74,9 +74,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#00679A',
-    padding: 10,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
+    //padding: 10,
+    //borderBottomLeftRadius: 15,
+    //borderBottomRightRadius: 15,
   },
   headerTitle: {
     fontSize: 20,
