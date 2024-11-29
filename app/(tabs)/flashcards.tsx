@@ -6,6 +6,7 @@ interface Flashcard {
   question: string;
   answer: string;
   image?: string;
+  urlCode?: string;
 }
 
 const FlashcardPage: React.FC = () => {
@@ -18,11 +19,14 @@ const FlashcardPage: React.FC = () => {
     const fetchFlashcards = async () => {
       try {
         const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
+        console.log('API Response:', response.data);
         const flashcardsData = response.data.map(item => ({
           question: item.question,
           answer: item.answer,
-          image: item.image
+          image: item.image,
+          urlCode: item.urlCode
         }));
+        console.log('Processed Flashcards:', flashcardsData);
         setFlashcards(flashcardsData);
         setLoading(false);
       } catch (error) {
@@ -63,21 +67,29 @@ const FlashcardPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar hidden />
-      <View style={styles.card}>
-        {flashcards[currentIndex].image && (
-          <Image source={{ uri: flashcards[currentIndex].image }} style={styles.image} />
-        )}
-        <Text style={styles.questionText}>{flashcards[currentIndex].question}</Text>
-        {showAnswer && (
-          <Text style={styles.answerText}>{flashcards[currentIndex].answer}</Text>
-        )}
+      <View style={styles.cardContainer}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => setShowAnswer(!showAnswer)}
+          activeOpacity={0.9}
+        >
+          {flashcards[currentIndex].urlCode && (
+            <Image
+              source={{ uri: flashcards[currentIndex].urlCode }}
+              style={styles.image}
+              resizeMode="contain"
+              onError={(error) => console.log('Image loading error:', error.nativeEvent)}
+              onLoad={() => console.log('Image loaded successfully:', flashcards[currentIndex].urlCode)}
+            />
+          )}
+          <Text style={styles.text}>
+            {showAnswer ? flashcards[currentIndex].answer : flashcards[currentIndex].question}
+          </Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handlePrevious} style={styles.navigationButton}>
           <Text style={styles.buttonText}>Previous</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowAnswer(!showAnswer)} style={styles.showAnswerButton}>
-          <Text style={styles.buttonText}>{showAnswer ? 'Hide Answer' : 'Show Answer'}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleNext} style={styles.navigationButton}>
           <Text style={styles.buttonText}>Next</Text>
@@ -94,6 +106,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#7F1C3E',
   },
+  cardContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 10,
+    padding: 20,
+    margin: 20,
+    width: '90%',
+    maxHeight: '70%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 10,
@@ -104,18 +126,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  questionText: {
+  text: {
     fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
     color: '#333',
-  },
-  answerText: {
-    fontSize: 16,
-    marginTop: 20,
-    textAlign: 'center',
-    color: '#00679A',
-    fontWeight: 'bold',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -130,13 +145,6 @@ const styles = StyleSheet.create({
     minWidth: 80,
     alignItems: 'center',
   },
-  showAnswerButton: {
-    backgroundColor: '#00679A',
-    padding: 10,
-    borderRadius: 5,
-    minWidth: 100,
-    alignItems: 'center',
-  },
   buttonText: {
     color: '#fff',
     fontSize: 16,
@@ -144,8 +152,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 200,
-    resizeMode: 'contain',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   errorText: {
     color: '#fff',
