@@ -1,3 +1,4 @@
+import * as DevClient from 'expo-dev-client';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Link, usePathname } from 'expo-router';
@@ -79,11 +80,9 @@ const DashboardApp = () => {
         />
         <View style={styles.buttonContainer}>
           <Link href="/Topics" style={styles.navigationButton}>
-            <Text style={[styles.buttonText, { fontSize }]}>Topics</Text>
+            <Text style={[styles.buttonText, { fontSize }]}>Take a Quiz</Text>
           </Link>
-          <Link href="/screens/FlashcardPage" style={[styles.navigationButton, { marginTop: 10 }]}>  
-            <Text style={[styles.buttonText, { fontSize }]}>Flash Cards</Text>
-          </Link>
+         
         </View>
       </View>
     </View>
