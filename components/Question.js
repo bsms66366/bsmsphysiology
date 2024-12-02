@@ -115,6 +115,16 @@ function Question() {
           </li>
         ))}
       </ul>
+      {answerSelected && (
+        <>
+          <div className="answer-section">
+            <p>The correct answer is: {answer}</p>
+          </div>
+          <div className="explanation-section">
+            <p>{selectedAnswer === answer ? "Correct!" : "Incorrect."}</p>
+          </div>
+        </>
+      )}
       <div>
         Score: {score} / {questions.length}
       </div>
