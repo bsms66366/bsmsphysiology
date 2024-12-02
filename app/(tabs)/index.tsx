@@ -1,4 +1,3 @@
-import * as DevClient from 'expo-dev-client';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Link, usePathname } from 'expo-router';
