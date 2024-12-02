@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     padding: 20,
     margin: 20,
     width: '90%',
-    maxHeight: '70%',
+    maxHeight: '80%',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 110,
+    height: 140,
     marginBottom: 5,
   },
   errorText: {
