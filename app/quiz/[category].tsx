@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -33,6 +33,7 @@ export default function QuizScreen() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [showAnswer, setShowAnswer] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [explanation, setExplanation] = useState("");
   const [percentageComplete, setPercentageComplete] = useState(0);
@@ -46,7 +47,33 @@ export default function QuizScreen() {
         console.log('Fetching questions for category:', categoryStr);
         const response = await axios.get<Question[]>("https://placements.bsms.ac.uk/api/physquiz");
         if (Array.isArray(response.data) && response.data.length > 0) {
-          setQuestions(response.data);
+          const processedQuestions = response.data.map(q => {
+            // Get unique options excluding the answer
+            const uniqueOptions = new Set([
+              q.option_1,
+              q.option_2,
+              q.option_3,
+              q.option_4
+            ].filter(opt => opt && opt.trim() !== q.answer.trim()));
+            
+            // Convert back to array and ensure exactly 4 options
+            const optionsArray = Array.from(uniqueOptions);
+            const finalOptions = [
+              optionsArray[0] || 'Option 1',
+              optionsArray[1] || 'Option 2',
+              optionsArray[2] || 'Option 3',
+              optionsArray[3] || 'Option 4'
+            ];
+
+            return {
+              ...q,
+              option_1: finalOptions[0],
+              option_2: finalOptions[1],
+              option_3: finalOptions[2],
+              option_4: finalOptions[3]
+            };
+          });
+          setQuestions(processedQuestions);
         } else {
           console.log('Invalid API response format:', response.data);
           Alert.alert('Error', 'Failed to load questions. Please try again.');
@@ -116,6 +143,7 @@ export default function QuizScreen() {
     }
 
     setExplanation(currentQuestion.explanation);
+    setShowAnswer(true);
   };
 
   const handleNextQuestion = () => {
@@ -127,6 +155,7 @@ export default function QuizScreen() {
       setSelectedOption(null);
       setExplanation("");
       setIsAnswerCorrect(null);
+      setShowAnswer(false);
       const newPercentage = ((currentQuestionIndex + 1) / filteredQuestions.length) * 100;
       setPercentageComplete(newPercentage);
     }
@@ -182,43 +211,50 @@ export default function QuizScreen() {
       <Text style={[styles.questionText, { fontSize: fontSize }]}>
         {currentQuestion.question}
       </Text>
-
-      {[
-        currentQuestion.option_1,
-        currentQuestion.option_2,
-        currentQuestion.option_3,
-        currentQuestion.option_4
-      ].map((option, index) => (
-        option && (
-          <Option
-            key={index}
-            text={option}
-            onPress={() => handleOptionSelect(option)}
-            selected={selectedOption === option}
-            disabled={!!selectedOption}
-            correct={selectedOption && option.trim().toLowerCase() === currentQuestion.answer.trim().toLowerCase()}
-            fontSize={fontSize - 2}
-          />
-        )
-      ))}
-
-      {explanation && (
-        <View style={styles.explanationContainer}>
-          <Text style={[styles.explanationText, { fontSize: fontSize - 2 }]}>
-            {explanation}
+      {(() => {
+        const [opt1, opt2, opt3, opt4] = [
+          currentQuestion.option_1,
+          currentQuestion.option_2,
+          currentQuestion.option_3,
+          currentQuestion.option_4
+        ].filter(Boolean);
+        
+        return [opt1, opt2, opt3, opt4].map((option, index) => 
+          option ? (
+            <Option
+              key={index}
+              option={option}
+              selectedOption={selectedOption}
+              setSelectedOption={setSelectedOption}
+              onSelect={handleOptionSelect}
+            />
+          ) : null
+        );
+      })()}
+      {showAnswer && (
+        <>
+          <Text style={[styles.answerText, { fontSize: fontSize - 2, marginTop: 15 }]}>
+            Correct Answer: {currentQuestion.answer}
           </Text>
-        </View>
+          {explanation && (
+            <View style={styles.explanationContainer}>
+              <Text style={[styles.explanationText, { fontSize: fontSize - 2 }]}>
+                {explanation}
+              </Text>
+            </View>
+          )}
+        </>
       )}
-
       {selectedOption && (
         <View style={styles.nextButtonContainer}>
-          <Option
-            text="Next Question"
+          <TouchableOpacity
+            style={[styles.nextButton, { padding: 12, backgroundColor: '#4CAF50', borderRadius: 8 }]}
             onPress={handleNextQuestion}
-            selected={false}
-            disabled={false}
-            fontSize={fontSize - 2}
-          />
+          >
+            <Text style={{ color: 'white', fontSize: fontSize - 2, textAlign: 'center' }}>
+              Next Question
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </ScrollView>
@@ -256,5 +292,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     fontWeight: '500',
+  },
+  answerText: {
+    fontWeight: '500',
+    color: '#4CAF50',
+    marginBottom: 10,
+    paddingHorizontal: 15,
+  },
+  nextButton: {
+    marginTop: 20,
+    width: '100%',
   },
 });
