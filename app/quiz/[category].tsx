@@ -105,7 +105,11 @@ export default function QuizScreen() {
       return;
     }
 
-    setFilteredQuestions(filtered);
+    // Shuffle and select exactly 4 unique questions
+    const shuffledQuestions = filtered.sort(() => 0.5 - Math.random());
+    const selectedQuestions = shuffledQuestions.slice(0, 4);
+
+    setFilteredQuestions(selectedQuestions);
     setCurrentQuestionIndex(0);
     setScore(0);
     setShowResult(false);
@@ -212,24 +216,31 @@ export default function QuizScreen() {
         {currentQuestion.question}
       </Text>
       {(() => {
-        const [opt1, opt2, opt3, opt4] = [
+        const allOptions = [
           currentQuestion.option_1,
           currentQuestion.option_2,
           currentQuestion.option_3,
-          currentQuestion.option_4
-        ].filter(Boolean);
+          currentQuestion.option_4,
+          currentQuestion.answer
+        ];
         
-        return [opt1, opt2, opt3, opt4].map((option, index) => 
-          option ? (
-            <Option
-              key={index}
-              option={option}
-              selectedOption={selectedOption}
-              setSelectedOption={setSelectedOption}
-              onSelect={handleOptionSelect}
-            />
-          ) : null
-        );
+        console.log('All Options:', allOptions);
+        
+        const uniqueOptions = Array.from(new Set(
+          allOptions.filter(opt => opt && opt.trim())
+        )).slice(0, 4);
+        
+        console.log('Unique Options:', uniqueOptions);
+        
+        return uniqueOptions.map((option, index) => (
+          <Option
+            key={index}
+            option={option}
+            selectedOption={selectedOption}
+            setSelectedOption={setSelectedOption}
+            onSelect={handleOptionSelect}
+          />
+        ));
       })()}
       {showAnswer && (
         <>
