@@ -4,7 +4,8 @@ import { Link, usePathname } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFontSize } from '../../context/FontSizeContext';
-
+import { useFontStyle } from '../../context/FontStyleContext';
+import { Picker } from '@react-native-picker/picker';
 import PhysiologyLogo from '../../assets/images/physiologyLogo.svg';
 
 interface UserProfile {
@@ -117,6 +118,7 @@ const DashboardApp = () => {
 
   const SettingsSection = ({ onBack }: { onBack: () => void }) => {
     const { fontSize, increaseFontSize, decreaseFontSize, resetFontSize } = useFontSize();
+    const { fontStyle, setFontStyle, availableFontStyles } = useFontStyle();
     
     return (
       <View style={styles.container}>
@@ -125,6 +127,7 @@ const DashboardApp = () => {
           <Text style={[styles.headerTitle, { fontSize }]}>Settings</Text>
         </View>
         <View style={styles.settingsContainer}>
+          {/* Font Size Section */}
           <Text style={[styles.settingTitle, { fontSize }]}>Text Size</Text>
           <Text style={[styles.settingDescription, { fontSize: Math.max(fontSize - 2, 12) }]}>
             Adjust the text size for better readability
@@ -158,6 +161,26 @@ const DashboardApp = () => {
               Reset to Default
             </Text>
           </TouchableOpacity>
+
+          {/* Font Style Section */}
+          <View style={styles.fontStyleSection}>
+            <Text style={[styles.settingTitle, { fontSize }]}>Font Style</Text>
+            <Text style={[styles.settingDescription, { fontSize: Math.max(fontSize - 2, 12) }]}>
+              Choose your preferred font style
+            </Text>
+            
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={fontStyle}
+                onValueChange={(itemValue) => setFontStyle(itemValue)}
+                style={[styles.picker, { fontSize }]}
+              >
+                {Object.entries(availableFontStyles).map(([key, value]) => (
+                  <Picker.Item key={key} label={value} value={value} />
+                ))}
+              </Picker>
+            </View>
+          </View>
         </View>
       </View>
     );
@@ -330,6 +353,22 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  fontStyleSection: {
+    marginTop: 30,
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    overflow: 'hidden',
+  },
+  picker: {
+    width: '100%',
+    height: 50,
+    color: '#333',
   },
 });
 

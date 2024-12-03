@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { FontSizeProvider } from '../context/FontSizeContext';
+import { FontStyleProvider } from '../context/FontStyleContext';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -37,21 +38,23 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <FontSizeProvider>
-        {/* Root Stack Navigator */}
-        <Stack>
-          {/* Tabs Layout */}
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <FontStyleProvider>
+          {/* Root Stack Navigator */}
+          <Stack>
+            {/* Tabs Layout */}
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-          {/* Profile and Edit Profile Screens */}
-          {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
-          <Stack.Screen name="/screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
+            {/* Profile and Edit Profile Screens */}
+            {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
+            <Stack.Screen name="/screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
 
-          {/* Quiz Screen */}
-          <Stack.Screen name="quiz/[category]" options={{ title: 'Quiz' }} />
+            {/* Quiz Screen */}
+            <Stack.Screen name="quiz/[category]" options={{ title: 'Quiz' }} />
 
-          {/* Default not-found screen  */}
-          {/*<Stack.Screen name="+not-found" />*/}
-        </Stack>
+            {/* Default not-found screen  */}
+            {/*<Stack.Screen name="+not-found" />*/}
+          </Stack>
+        </FontStyleProvider>
       </FontSizeProvider>
     </ThemeProvider>
   );
