@@ -215,24 +215,9 @@ export default function QuizScreen() {
       <Text style={[styles.questionText, { fontSize: fontSize }]}>
         {currentQuestion.question}
       </Text>
-      {(() => {
-        const allOptions = [
-          currentQuestion.option_1,
-          currentQuestion.option_2,
-          currentQuestion.option_3,
-          currentQuestion.option_4,
-          currentQuestion.answer
-        ];
-        
-        console.log('All Options:', allOptions);
-        
-        const uniqueOptions = Array.from(new Set(
-          allOptions.filter(opt => opt && opt.trim())
-        )).slice(0, 4);
-        
-        console.log('Unique Options:', uniqueOptions);
-        
-        return uniqueOptions.map((option, index) => (
+
+      <View style={styles.optionsWrapper}>
+        {[currentQuestion.option_1, currentQuestion.option_2, currentQuestion.option_3, currentQuestion.option_4].map((option, index) => (
           <Option
             key={index}
             option={option}
@@ -240,8 +225,9 @@ export default function QuizScreen() {
             setSelectedOption={setSelectedOption}
             onSelect={handleOptionSelect}
           />
-        ));
-      })()}
+        ))}
+      </View>
+
       {showAnswer && (
         <>
           <Text style={[styles.answerText, { fontSize: fontSize - 2, marginTop: 15 }]}>
@@ -256,6 +242,7 @@ export default function QuizScreen() {
           )}
         </>
       )}
+      
       {selectedOption && (
         <View style={styles.nextButtonContainer}>
           <TouchableOpacity
@@ -313,5 +300,8 @@ const styles = StyleSheet.create({
   nextButton: {
     marginTop: 20,
     width: '100%',
+  },
+  optionsWrapper: {
+    marginBottom: 20,
   },
 });
