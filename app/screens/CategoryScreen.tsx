@@ -19,7 +19,7 @@ export default function CategoryScreen() {
   }, []);
 
   const handleCategorySelect = (category: string) => {
-    router.push({ pathname: 'quiz', params: { category } });
+    router.push({ pathname: '/screens/QuizQuestions', params: { category } });
   };
 
   return (

@@ -65,11 +65,43 @@ export default function QuizQuestions() {
         console.log('API Response length:', response.data.length);
         
         if (Array.isArray(response.data) && response.data.length > 0) {
-          // Log a few sample questions to see their structure
-          console.log('Sample questions from API:', response.data.slice(0, 2));
+          // Process questions to ensure exactly 4 options including the answer
+          const processedQuestions = response.data.map(q => {
+            // Get all options including the answer
+            const allOptions = [
+              q.option_1,
+              q.option_2,
+              q.option_3,
+              q.option_4,
+              q.answer
+            ].filter(opt => opt && opt.trim());
+            
+            // Remove duplicates
+            const uniqueOptions = Array.from(new Set(allOptions));
+            
+            // Shuffle the unique options
+            const shuffledOptions = uniqueOptions.sort(() => 0.5 - Math.random());
+            
+            // Ensure the answer is included and limit to exactly 4 options
+            const finalOptions = shuffledOptions.slice(0, 4);
+            if (!finalOptions.includes(q.answer)) {
+              finalOptions[3] = q.answer; // Replace last option with answer if it's not included
+            }
+            
+            // Shuffle one final time to randomize answer position
+            const randomizedOptions = finalOptions.sort(() => 0.5 - Math.random());
+
+            return {
+              ...q,
+              option_1: randomizedOptions[0],
+              option_2: randomizedOptions[1],
+              option_3: randomizedOptions[2],
+              option_4: randomizedOptions[3]
+            };
+          });
           
           // Filter questions by category
-          const filteredQuestions = response.data.filter(q => {
+          const filteredQuestions = processedQuestions.filter(q => {
             const questionCategoryId = q.category_id.toString();
             const selectedCategoryId = category.toString();
             
@@ -305,9 +337,8 @@ export default function QuizQuestions() {
         </View>
 
         <View style={styles.optionsWrapper}>
-          {[currentQuestion.option_1, currentQuestion.option_2, currentQuestion.option_3, currentQuestion.option_4, currentQuestion.answer]
+          {[currentQuestion.option_1, currentQuestion.option_2, currentQuestion.option_3, currentQuestion.option_4]
             .filter(Boolean) // Remove any undefined options
-            .sort(() => Math.random() - 0.5) // Randomize the order
             .map((option, index) => (
               <TouchableOpacity
                 key={index}

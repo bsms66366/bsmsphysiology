@@ -46,10 +46,9 @@ export default function RootLayout() {
           {/* <Stack.Screen name="screens/ProfileScreen" options={{ title: "Profile" }} /> */}
           <Stack.Screen name="/screens/EditProfileScreen" options={{ title: "Edit Profile", headerShown: false }} />
 
+          {/* Quiz Screen */}
+          <Stack.Screen name="quiz/[category]" options={{ title: 'Quiz' }} />
 
-          {/* Category and Quiz screens */}
-         
-          <Stack.Screen name="/screens/QuizQuestions" options={{ title: 'Questions' }} />
           {/* Default not-found screen  */}
           {/*<Stack.Screen name="+not-found" />*/}
         </Stack>
