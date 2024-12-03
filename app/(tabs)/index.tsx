@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, Pressable } from 'react-native';
 import { Link, usePathname } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFontSize } from '../../context/FontSizeContext';
 import { useFontStyle } from '../../context/FontStyleContext';
-import { Picker } from '@react-native-picker/picker';
 import PhysiologyLogo from '../../assets/images/physiologyLogo.svg';
 
 interface UserProfile {
@@ -119,37 +118,49 @@ const DashboardApp = () => {
   const SettingsSection = ({ onBack }: { onBack: () => void }) => {
     const { fontSize, increaseFontSize, decreaseFontSize, resetFontSize } = useFontSize();
     const { fontStyle, setFontStyle, availableFontStyles } = useFontStyle();
-    
+
+    // Create an array of font style options for the picker
+    const fontStyleOptions = Object.entries(availableFontStyles)
+      .filter(([key]) => key !== 'default')
+      .map(([key, value]) => ({ 
+        label: key
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, str => str.toUpperCase())
+          .trim(), 
+        value 
+      }));
+
+    const [modalVisible, setModalVisible] = useState(false);
+
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
           {renderBackButton(onBack)}
           <Text style={[styles.headerTitle, { fontSize }]}>Settings</Text>
         </View>
+        
         <View style={styles.settingsContainer}>
-          {/* Font Size Section */}
-          <Text style={[styles.settingTitle, { fontSize }]}>Text Size</Text>
-          <Text style={[styles.settingDescription, { fontSize: Math.max(fontSize - 2, 12) }]}>
-            Adjust the text size for better readability
-          </Text>
+          {/* Font Size Controls */}
+          <Text style={[styles.settingTitle, { fontSize }]}>Font Size</Text>
+          <Text style={styles.settingDescription}>Adjust the text size for better readability</Text>
           
           <View style={styles.fontSizeControls}>
             <TouchableOpacity 
               style={styles.fontSizeButton} 
               onPress={decreaseFontSize}
             >
-              <Text style={styles.fontSizeButtonText}>A-</Text>
+              <Text style={styles.fontSizeButtonText}>-</Text>
             </TouchableOpacity>
             
             <View style={styles.fontSizeDisplay}>
-              <Text style={[styles.fontSizeText, { fontSize }]}>{fontSize}px</Text>
+              <Text style={[styles.fontSizeText, { fontSize }]}>{fontSize}</Text>
             </View>
             
             <TouchableOpacity 
               style={styles.fontSizeButton} 
               onPress={increaseFontSize}
             >
-              <Text style={styles.fontSizeButtonText}>A+</Text>
+              <Text style={styles.fontSizeButtonText}>+</Text>
             </TouchableOpacity>
           </View>
           
@@ -157,29 +168,44 @@ const DashboardApp = () => {
             style={styles.resetButton} 
             onPress={resetFontSize}
           >
-            <Text style={[styles.resetButtonText, { fontSize: Math.max(fontSize - 2, 12) }]}>
-              Reset to Default
-            </Text>
+            <Text style={styles.resetButtonText}>Reset Font Size</Text>
           </TouchableOpacity>
 
-          {/* Font Style Section */}
+          {/* Font Style Selection */}
           <View style={styles.fontStyleSection}>
             <Text style={[styles.settingTitle, { fontSize }]}>Font Style</Text>
-            <Text style={[styles.settingDescription, { fontSize: Math.max(fontSize - 2, 12) }]}>
-              Choose your preferred font style
-            </Text>
+            <Text style={styles.settingDescription}>Choose your preferred font</Text>
             
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={fontStyle}
-                onValueChange={(itemValue) => setFontStyle(itemValue)}
-                style={[styles.picker, { fontSize }]}
-              >
-                {Object.entries(availableFontStyles).map(([key, value]) => (
-                  <Picker.Item key={key} label={value} value={value} />
-                ))}
-              </Picker>
-            </View>
+            <TouchableOpacity 
+              style={styles.pickerContainer} 
+              onPress={() => setModalVisible(true)}
+            >
+              <Text style={styles.picker}>{fontStyle}</Text>
+            </TouchableOpacity>
+
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => setModalVisible(false)}
+            >
+              <View style={styles.modalContainer}>
+                <ScrollView>
+                  {fontStyleOptions.map((option) => (
+                    <Pressable 
+                      key={option.value} 
+                      style={styles.modalOption} 
+                      onPress={() => {
+                        setFontStyle(option.value);
+                        setModalVisible(false);
+                      }}
+                    >
+                      <Text style={styles.modalOptionText}>{option.label}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            </Modal>
           </View>
         </View>
       </View>
@@ -364,11 +390,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     overflow: 'hidden',
+    padding: 10,
   },
   picker: {
     width: '100%',
     height: 50,
     color: '#333',
+  },
+  modalContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalOption: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  modalOptionText: {
+    fontSize: 16,
   },
 });
 

@@ -7,7 +7,11 @@ export const FONT_STYLES = {
   roboto: 'Roboto-Regular',
   robotoMedium: 'Roboto-Medium',
   robotoBold: 'Roboto-Bold',
-  robotoLight: 'Roboto-Light'
+  robotoLight: 'Roboto-Light',
+  inter: 'Inter-Regular',
+  interMedium: 'Inter-Medium',
+  interBold: 'Inter-Bold',
+  interLight: 'Inter-Light'
 } as const;
 
 type FontStyleType = typeof FONT_STYLES[keyof typeof FONT_STYLES];
@@ -39,7 +43,7 @@ export const FontStyleProvider = ({ children }: { children: React.ReactNode }) =
     }
   };
 
-  const saveFontStyle = async (style: FontStyleType) => {
+  const setFontStyle = async (style: FontStyleType) => {
     try {
       await AsyncStorage.setItem('fontStyle', style);
       setFontStyleState(style);
@@ -52,7 +56,7 @@ export const FontStyleProvider = ({ children }: { children: React.ReactNode }) =
     <FontStyleContext.Provider 
       value={{ 
         fontStyle, 
-        setFontStyle: saveFontStyle,
+        setFontStyle, 
         availableFontStyles: FONT_STYLES 
       }}
     >
