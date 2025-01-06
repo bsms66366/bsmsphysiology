@@ -24,6 +24,20 @@ interface Category {
   description?: string;
 }
 
+const CATEGORY_NAMES: { [key: number]: string } = {
+  44: "Core Concepts",
+  45: "Cells Environment",
+  46: "Nervous System",
+  47: "Adrenal Glands",
+  48: "Endocrine Regulation",
+  49: "Heart and Circulation",
+  50: "Kidney and Urinary System",
+  51: "Lungs and Gas Exchange",
+  52: "Gastrointestinal System",
+  53: "Reproductive System",
+  54: "Musculoskeletal System"
+};
+
 export default function QuizQuestions() {
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -44,12 +58,8 @@ export default function QuizQuestions() {
   useEffect(() => {
     const fetchData = async () => {
       const categoryId = params.category_id;
-      const questionIds = params.questionIds?.toString().split(',') || [];
       
-      console.log('Fetching questions with:', {
-        categoryId,
-        questionIds
-      });
+      console.log('Fetching questions for category:', categoryId);
 
       if (!categoryId) {
         console.error('No category_id provided');
@@ -59,38 +69,33 @@ export default function QuizQuestions() {
         return;
       }
 
-      if (questionIds.length === 0) {
-        console.error('No questions selected');
-        Alert.alert('Error', 'No questions selected', [
-          { text: 'OK', onPress: () => router.back() }
-        ]);
-        return;
-      }
-
       try {
         setLoading(true);
 
-        // Fetch category details first
-        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${categoryId}`);
-        setCategory(categoryResponse.data);
+        // Set category using the mapping
+        setCategory({
+          id: Number(categoryId),
+          name: CATEGORY_NAMES[Number(categoryId)] || `Category ${categoryId}`,
+          description: `Questions for ${CATEGORY_NAMES[Number(categoryId)] || `Category ${categoryId}`}`
+        });
 
-        // Get questions by IDs
-        const promises = questionIds.map(id => 
-          axios.get(`https://placements.bsms.ac.uk/api/physquiz/${id}`)
+        // Fetch all questions and filter by category
+        const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
+        const allQuestions = response.data;
+        const categoryQuestions = allQuestions.filter(
+          (q: Question) => q.category_id.toString() === categoryId.toString()
         );
-        
-        const responses = await Promise.all(promises);
-        const selectedQuestions = responses.map(response => response.data)
-          .filter(question => question.category_id.toString() === categoryId);
 
-        if (selectedQuestions.length > 0) {
-          setQuestions(selectedQuestions);
-          setCurrentQuestion(selectedQuestions[0]);
+        if (categoryQuestions.length > 0) {
+          // Shuffle the questions
+          const shuffledQuestions = [...categoryQuestions].sort(() => Math.random() - 0.5);
+          setQuestions(shuffledQuestions);
+          setCurrentQuestion(shuffledQuestions[0]);
           setCurrentIndex(0);
           setPercentageComplete(0);
         } else {
-          console.error('No matching questions found');
-          Alert.alert('Error', 'No questions found', [
+          console.error('No questions found for category');
+          Alert.alert('Error', 'No questions found for this category', [
             { text: 'OK', onPress: () => router.back() }
           ]);
         }
@@ -115,7 +120,7 @@ export default function QuizQuestions() {
     const subscription = BackHandler.addEventListener('hardwareBackPress', backHandler);
 
     return () => subscription.remove();
-  }, [params.category_id, params.questionIds]);
+  }, [params.category_id]);
 
   const handleOptionSelect = (option: string) => {
     if (showAnswer) return;
