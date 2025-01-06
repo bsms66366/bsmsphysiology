@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -11,48 +11,53 @@ interface Question {
   category_id: number;
 }
 
-interface Category {
-  id: number;
-  name: string;
-  description?: string;
-}
-
 export default function CategoryQuizCount() {
-  const { category_id } = useLocalSearchParams();
+  const params = useLocalSearchParams();
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [category, setCategory] = useState<Category | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchQuestions = async () => {
       try {
-        console.log('Fetching data for category_id:', category_id);
-        
-        // Fetch category details
-        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${category_id}`);
-        setCategory(categoryResponse.data);
-        
-        // Fetch questions
-        const questionsResponse = await axios.get<Question[]>(`https://placements.bsms.ac.uk/api/physquiz?category_id=${category_id}`);
-        console.log('Questions received:', questionsResponse.data);
-        
-        if (Array.isArray(questionsResponse.data)) {
-          setQuestions(questionsResponse.data);
-        } else {
-          console.error('Invalid questions response format:', questionsResponse.data);
+        const categoryId = params.category_id;
+        if (!categoryId) {
+          console.error('No category_id provided');
+          Alert.alert('Error', 'No category selected', [
+            { text: 'OK', onPress: () => router.back() }
+          ]);
+          return;
         }
+
+        console.log('Fetching questions for category_id:', categoryId);
+        const response = await axios.get(`https://placements.bsms.ac.uk/api/physquiz`, {
+          params: {
+            category_id: categoryId
+          }
+        });
+        console.log('Questions received:', response.data);
         
-        setLoading(false);
+        if (Array.isArray(response.data)) {
+          setQuestions(response.data);
+        } else {
+          console.error('Invalid response format:', response.data);
+          Alert.alert('Error', 'Failed to load questions', [
+            { text: 'OK', onPress: () => router.back() }
+          ]);
+        }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching questions:', error);
+        Alert.alert('Error', 'Failed to load questions', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [category_id]);
+    fetchQuestions();
+  }, [params.category_id]);
 
   const toggleQuestion = (questionId: number) => {
     setSelectedQuestions(prev => 
@@ -68,7 +73,7 @@ export default function CategoryQuizCount() {
       return;
     }
     
-    router.push(`/quiz/take?category_id=${category_id}&questionIds=${selectedQuestions.join(',')}`);
+    router.push(`/quiz/take?category_id=${params.category_id}&questionIds=${selectedQuestions.join(',')}`);
   };
 
   if (loading) {
@@ -82,10 +87,6 @@ export default function CategoryQuizCount() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{category?.name || 'Category'}</Text>
-      {category?.description && (
-        <Text style={styles.description}>{category.description}</Text>
-      )}
       <Text style={styles.subtitle}>{questions.length} questions available</Text>
 
       <ScrollView style={styles.questionList}>
@@ -125,18 +126,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#7F1C3E',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    color: '#fff',
-    marginBottom: 16,
-    opacity: 0.8,
   },
   subtitle: {
     fontSize: 18,

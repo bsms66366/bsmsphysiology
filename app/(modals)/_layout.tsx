@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-export default function ScreensLayout() {
+export default function ModalLayout() {
   return (
     <Stack screenOptions={{
       headerStyle: {
@@ -11,25 +11,12 @@ export default function ScreensLayout() {
         fontWeight: 'bold',
       },
       presentation: 'modal',
-      animation: 'slide_from_right',
+      animation: 'slide_from_bottom',
     }}>
-      <Stack.Screen
-        name="QuizQuestions"
-        options={{
-          title: "Quiz",
-        }}
-      />
-      <Stack.Screen
-        name="CategoryScreen"
-        options={{
-          title: "Categories",
-        }}
-      />
       <Stack.Screen
         name="CategoryQuizCount"
         options={{
           title: "Available Questions",
-          presentation: 'modal',
         }}
       />
     </Stack>

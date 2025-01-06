@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginHorizontal: 5,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#00679A',
   },
   selectedCategory: {
     backgroundColor: '#FFFFFF',

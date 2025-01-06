@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 
 export default function CategoryScreen() {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
     axios
-      .get('https://placements.bsms.ac.uk/api/categories') // Example API endpoint
+      .get('https://placements.bsms.ac.uk/api/categories')
       .then((response) => {
         setCategories(response.data);
       })
@@ -18,22 +18,28 @@ export default function CategoryScreen() {
       });
   }, []);
 
-  const handleCategorySelect = (category: string) => {
-    router.push({ pathname: '/screens/QuizQuestions', params: { category } });
+  const handleCategorySelect = (categoryId: string) => {
+    console.log('Selected category:', categoryId);
+    router.push(`/(tabs)/quiz-results/CategoryQuizCount?category_id=${categoryId}`);
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Select a Category</Text>
-      {categories.map((category, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.categoryButton}
-          onPress={() => handleCategorySelect(category)}
-        >
-          <Text style={styles.categoryText}>{category}</Text>
-        </TouchableOpacity>
-      ))}
+      <ScrollView style={styles.scrollView}>
+        {categories.map((category: any) => (
+          <TouchableOpacity
+            key={category.id}
+            style={styles.categoryButton}
+            onPress={() => handleCategorySelect(category.id)}
+          >
+            <Text style={styles.categoryName}>{category.name}</Text>
+            {category.description && (
+              <Text style={styles.categoryDescription}>{category.description}</Text>
+            )}
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -41,26 +47,31 @@ export default function CategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#fff',
     padding: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    textAlign: 'center',
+  },
+  scrollView: {
+    flex: 1,
   },
   categoryButton: {
+    backgroundColor: '#f5f5f5',
     padding: 16,
-    backgroundColor: '#004643',
     borderRadius: 8,
-    marginVertical: 8,
-    width: '80%',
-    alignItems: 'center',
+    marginBottom: 12,
   },
-  categoryText: {
-    color: '#fff',
+  categoryName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  categoryDescription: {
+    fontSize: 14,
+    color: '#666',
   },
 });

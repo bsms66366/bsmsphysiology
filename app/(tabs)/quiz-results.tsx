@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
-import CategoryQuizCount from '../../app/screens/CategoryQuizCount';
 
 interface QuizResult {
   category: string;
@@ -58,12 +57,10 @@ const QuizResultsScreen = () => {
       
       <ScrollView style={styles.resultsContainer}>
         <View style={styles.contentContainer}>
-          <Link href="/quiz/general" style={styles.startButton}>
+         {/*  <Link href="/quiz/general" style={styles.startButton}>
             <Text style={styles.startButtonText}>Start New Quiz</Text>
-          </Link>
+          </Link> */}
         </View>
-
-        <CategoryQuizCount />
 
         <Text style={styles.resultsTitle}>Your Quiz Results</Text>
         {quizResults.length === 0 ? (
