@@ -18,6 +18,12 @@ interface Question {
   urlCode?: string;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 export default function QuizQuestions() {
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -32,10 +38,11 @@ export default function QuizQuestions() {
   const [percentageComplete, setPercentageComplete] = useState(0);
   const [score, setScore] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState<number>(0);
+  const [category, setCategory] = useState<Category | null>(null);
   const [quizCompleted, setQuizCompleted] = useState(false);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchData = async () => {
       const categoryId = params.category_id;
       const questionIds = params.questionIds?.toString().split(',') || [];
       
@@ -62,39 +69,34 @@ export default function QuizQuestions() {
 
       try {
         setLoading(true);
-        // First get all questions for the category
-        const allQuestionsResponse = await axios.get(`https://placements.bsms.ac.uk/api/physquiz`, {
-          params: {
-            category_id: categoryId
-          }
-        });
 
-        if (Array.isArray(allQuestionsResponse.data)) {
-          // Filter the questions to only include the selected ones
-          const selectedQuestions = allQuestionsResponse.data.filter(
-            question => questionIds.includes(question.id.toString())
-          );
+        // Fetch category details first
+        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${categoryId}`);
+        setCategory(categoryResponse.data);
 
-          if (selectedQuestions.length > 0) {
-            setQuestions(selectedQuestions);
-            setCurrentQuestion(selectedQuestions[0]);
-            setCurrentIndex(0);
-            setPercentageComplete(0);
-          } else {
-            console.error('No matching questions found');
-            Alert.alert('Error', 'No questions found', [
-              { text: 'OK', onPress: () => router.back() }
-            ]);
-          }
+        // Get questions by IDs
+        const promises = questionIds.map(id => 
+          axios.get(`https://placements.bsms.ac.uk/api/physquiz/${id}`)
+        );
+        
+        const responses = await Promise.all(promises);
+        const selectedQuestions = responses.map(response => response.data)
+          .filter(question => question.category_id.toString() === categoryId);
+
+        if (selectedQuestions.length > 0) {
+          setQuestions(selectedQuestions);
+          setCurrentQuestion(selectedQuestions[0]);
+          setCurrentIndex(0);
+          setPercentageComplete(0);
         } else {
-          console.error('Invalid questions response format:', allQuestionsResponse.data);
-          Alert.alert('Error', 'Invalid response format', [
+          console.error('No matching questions found');
+          Alert.alert('Error', 'No questions found', [
             { text: 'OK', onPress: () => router.back() }
           ]);
         }
       } catch (error) {
-        console.error('Error fetching questions:', error);
-        Alert.alert('Error', 'Failed to load questions', [
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'Failed to load quiz data', [
           { text: 'OK', onPress: () => router.back() }
         ]);
       } finally {
@@ -102,7 +104,7 @@ export default function QuizQuestions() {
       }
     };
 
-    fetchQuestions();
+    fetchData();
 
     // Add a hardware back button handler
     const backHandler = () => {
@@ -147,12 +149,12 @@ export default function QuizQuestions() {
 
     const percentage = Math.round((score / answeredQuestions) * 100);
     router.push({
-      pathname: '/(modals)/QuizResults',
+      pathname: '/screens/QuizResults',
       params: {
         score,
         total: answeredQuestions,
         percentage,
-        categoryId: params.category_id?.toString()
+        categoryId: params.category_id
       }
     });
   };

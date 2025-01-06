@@ -68,7 +68,7 @@ export default function CategoryQuizCount() {
       return;
     }
     
-    router.push(`/quiz/take?category_id=${category_id}&questionIds=${selectedQuestions.join(',')}`);
+    router.push(`/quiz/take/${category_id}?questionIds=${selectedQuestions.join(',')}`);
   };
 
   if (loading) {
@@ -86,7 +86,15 @@ export default function CategoryQuizCount() {
       {category?.description && (
         <Text style={styles.description}>{category.description}</Text>
       )}
-      <Text style={styles.subtitle}>{questions.length} questions available</Text>
+      <Text style={styles.subtitle}>
+        {questions.length} question{questions.length !== 1 ? 's' : ''} available in this category
+      </Text>
+
+      <View style={styles.infoBox}>
+        <Text style={styles.infoText}>
+          ℹ️ Select questions to include in your quiz. All questions are from the {category?.name || 'current'} category.
+        </Text>
+      </View>
 
       <ScrollView style={styles.questionList}>
         {questions.map((question) => (
@@ -98,7 +106,12 @@ export default function CategoryQuizCount() {
             ]}
             onPress={() => toggleQuestion(question.id)}
           >
-            <Text style={styles.questionText}>{question.question}</Text>
+            <Text style={[
+              styles.questionText,
+              selectedQuestions.includes(question.id) && styles.selectedQuestionText
+            ]}>
+              {question.question}
+            </Text>
             {selectedQuestions.includes(question.id) && (
               <Text style={styles.selectedText}>✓ Selected</Text>
             )}
@@ -159,6 +172,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+  selectedQuestionText: {
+    color: '#fff',
+  },
   selectedText: {
     color: '#fff',
     marginTop: 8,
@@ -169,6 +185,17 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     textAlign: 'center',
+  },
+  infoBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  infoText: {
+    color: '#fff',
+    fontSize: 14,
+    opacity: 0.9,
   },
   bottomContainer: {
     marginTop: 16,

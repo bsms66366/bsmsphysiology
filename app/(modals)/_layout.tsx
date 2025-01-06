@@ -19,6 +19,13 @@ export default function ModalLayout() {
           title: "Available Questions",
         }}
       />
+      <Stack.Screen
+        name="QuizResults"
+        options={{
+          title: "Quiz Results",
+          headerShown: false, // Hide header since we have our own close button
+        }}
+      />
     </Stack>
   );
 }

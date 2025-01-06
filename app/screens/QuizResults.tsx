@@ -15,7 +15,6 @@ export default function QuizResults() {
   const router = useRouter();
   const { fontSize } = useFontSize();
   const [category, setCategory] = useState<Category | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const score = parseInt(params.score as string) || 0;
   const total = parseInt(params.total as string) || 0;
@@ -24,25 +23,17 @@ export default function QuizResults() {
 
   useEffect(() => {
     const fetchCategory = async () => {
-      if (!categoryId) {
-        setError('No category ID provided');
-        return;
-      }
-
       try {
         const response = await axios.get(`https://placements.bsms.ac.uk/api/categories/${categoryId}`);
-        if (response.data) {
-          setCategory(response.data);
-        } else {
-          setError('Category not found');
-        }
+        setCategory(response.data);
       } catch (error) {
         console.error('Error fetching category:', error);
-        setError('Failed to load category');
       }
     };
 
-    fetchCategory();
+    if (categoryId) {
+      fetchCategory();
+    }
   }, [categoryId]);
 
   const getFeedback = (percentage: number) => {
@@ -61,16 +52,8 @@ export default function QuizResults() {
     router.push('/quiz');
   };
 
-  const handleClose = () => {
-    router.back();
-  };
-
   return (
     <View style={styles.container}>
-      <Pressable style={styles.closeButton} onPress={handleClose}>
-        <Text style={styles.closeButtonText}>✕</Text>
-      </Pressable>
-
       <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Quiz Results</Text>
       
       <Text style={[styles.categoryName, { fontSize: fontSize + 2 }]}>
@@ -102,10 +85,6 @@ export default function QuizResults() {
           <Text style={styles.buttonText}>Back to Categories</Text>
         </Pressable>
       </View>
-
-      {error && (
-        <Text style={styles.error}>{error}</Text>
-      )}
     </View>
   );
 }
@@ -164,22 +143,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    padding: 10,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  error: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
 });

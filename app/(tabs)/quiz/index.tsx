@@ -1,76 +1,116 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import axios from 'axios';
+import { useFontSize } from '../../../context/FontSizeContext';
 
-const categories = [
-  { id: '44', name: 'Core Concepts' },
-  { id: '45', name: 'Cells Environment' },
-  { id: '46', name: 'Nervous System' },
-  { id: '48', name: 'Endocrine Regulation' },
-  { id: '54', name: 'Musculoskeletal System' },
-  { id: '49', name: 'Heart and Circulation' },
-  { id: '50', name: 'Kidney and Urinary System' },
-  { id: '51', name: 'Lungs and Gas Exchange' },
-  { id: '52', name: 'Gastrointestinal System' },
-  { id: '53', name: 'Reproductive System' }
-];
+interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 export default function CategoryScreen() {
   const router = useRouter();
+  const { fontSize } = useFontSize();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleCategorySelect = (categoryId: string) => {
-    console.log('Selected category:', categoryId);
-    router.push({
-      pathname: '/quiz/questions',
-      params: {
-        category_id: categoryId
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('https://placements.bsms.ac.uk/api/categories');
+        if (Array.isArray(response.data)) {
+          setCategories(response.data);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setLoading(false);
       }
-    });
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleCategoryPress = (categoryId: number) => {
+    router.push(`/quiz/questions?category_id=${categoryId}`);
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#00679A" />
+        <Text style={[styles.loadingText, { fontSize }]}>Loading categories...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Select a Category</Text>
-      <View style={styles.categoriesContainer}>
+    <View style={styles.container}>
+      <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Select a Category</Text>
+      <Text style={[styles.subtitle, { fontSize }]}>
+        Select a category to start practicing questions
+      </Text>
+
+      <ScrollView style={styles.categoryList}>
         {categories.map((category) => (
           <Pressable
             key={category.id}
-            style={styles.categoryButton}
-            onPress={() => handleCategorySelect(category.id)}
+            style={styles.categoryItem}
+            onPress={() => handleCategoryPress(category.id)}
           >
-            <Text style={styles.categoryText}>{category.name}</Text>
+            <Text style={[styles.categoryName, { fontSize: fontSize + 2 }]}>
+              {category.name}
+            </Text>
+            {category.description && (
+              <Text style={[styles.categoryDescription, { fontSize }]}>
+                {category.description}
+              </Text>
+            )}
           </Pressable>
         ))}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
     backgroundColor: '#7F1C3E',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
     color: '#fff',
-    textAlign: 'center',
-    marginVertical: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
-  categoriesContainer: {
-    padding: 16,
-    gap: 12,
+  subtitle: {
+    color: '#fff',
+    opacity: 0.8,
+    marginBottom: 24,
   },
-  categoryButton: {
+  categoryList: {
+    flex: 1,
+  },
+  categoryItem: {
     backgroundColor: '#fff',
-    padding: 20,
+    padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    marginBottom: 12,
   },
-  categoryText: {
-    fontSize: 16,
+  categoryName: {
+    fontWeight: 'bold',
     color: '#000',
-    fontWeight: '500',
+    marginBottom: 4,
+  },
+  categoryDescription: {
+    color: '#666',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });
