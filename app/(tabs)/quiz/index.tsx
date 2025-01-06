@@ -10,6 +10,20 @@ interface Category {
   description?: string;
 }
 
+const CATEGORY_NAMES: { [key: number]: string } = {
+  44: "Core Concepts",
+  45: "Cells Environment",
+  46: "Nervous System",
+  47: "Adrenal Glands",
+  48: "Endocrine Regulation",
+  49: "Heart and Circulation",
+  50: "Kidney and Urinary System",
+  51: "Lungs and Gas Exchange",
+  52: "Gastrointestinal System",
+  53: "Reproductive System",
+  54: "Musculoskeletal System"
+};
+
 export default function CategoryScreen() {
   const router = useRouter();
   const { fontSize } = useFontSize();
@@ -19,10 +33,17 @@ export default function CategoryScreen() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('https://placements.bsms.ac.uk/api/categories');
-        if (Array.isArray(response.data)) {
-          setCategories(response.data);
-        }
+        const physquizResponse = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
+        const uniqueCategoryIds = [...new Set(physquizResponse.data.map((item: any) => item.category_id))];
+        
+        // Create category objects from the unique IDs
+        const validCategories = uniqueCategoryIds.map(id => ({
+          id,
+          name: CATEGORY_NAMES[id] || `Category ${id}`,
+          description: `Questions related to ${CATEGORY_NAMES[id] || `Category ${id}`}`
+        }));
+        
+        setCategories(validCategories);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -34,7 +55,7 @@ export default function CategoryScreen() {
   }, []);
 
   const handleCategoryPress = (categoryId: number) => {
-    router.push(`/quiz/questions?category_id=${categoryId}`);
+    router.push(`/quiz/take?category_id=${categoryId}`);
   };
 
   if (loading) {
