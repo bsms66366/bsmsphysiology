@@ -25,11 +25,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Topics"
+        name="quiz"
         options={{
-          title: 'Topics',
+          title: 'Quizzes',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'help-circle' : 'help-circle'} color={color} />
+            <TabBarIcon name={focused ? 'albums' : 'albums-outline'} color={color} />
           ),
         }}
       />
@@ -51,6 +51,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      
     </Tabs>
   );
 }
