@@ -6,16 +6,17 @@ import { useFontSize } from '../../../context/FontSizeContext';
 import { SvgProps } from 'react-native-svg';
 
 // Import SVG files
-import Icon1 from '../../../assets/images/icon1.svg';
-import Icon2 from '../../../assets/images/icon2.svg';
-import Icon3 from '../../../assets/images/icon3.svg';
-import Icon4 from '../../../assets/images/icon4.svg';
-import Icon5 from '../../../assets/images/icon5.svg';
-import Icon6 from '../../../assets/images/icon6.svg';
-import Icon7 from '../../../assets/images/icon7.svg';
-import Icon8 from '../../../assets/images/icon8.svg';
-import Icon9 from '../../../assets/images/icon9.svg';
-import Icon10 from '../../../assets/images/icon10.svg';
+import Icon1 from '../../../assets/images/icon1.svg';  // Core Concepts
+import Icon2 from '../../../assets/images/icon2.svg';  // Cells Environment
+import Icon3 from '../../../assets/images/icon3.svg';  // Nervous System
+import Icon4 from '../../../assets/images/icon4.svg';  // Endocrine Regulation
+import Icon5 from '../../../assets/images/icon5.svg';  // Musculoskeletal System
+import Icon6 from '../../../assets/images/icon6.svg';  // Heart and Circulation
+import Icon7 from '../../../assets/images/icon7.svg';  // Kidney and Urinary System
+import Icon8 from '../../../assets/images/icon8.svg';  // Lungs and Gas Exchange
+import Icon9 from '../../../assets/images/icon9.svg';  // Gastrointestinal System
+import Icon10 from '../../../assets/images/icon10.svg'; // Reproductive System
+import Icon11 from '../../../assets/images/icon11.svg'; // Flash Cards
 
 interface Category {
   id: number;
@@ -24,33 +25,19 @@ interface Category {
   icon?: React.FC<SvgProps>;
 }
 
-const CATEGORY_NAMES: { [key: number]: string } = {
-  44: "Core Concepts",
-  45: "Cells Environment",
-  46: "Nervous System",
-  47: "Adrenal Glands",
-  48: "Endocrine Regulation",
-  49: "Heart and Circulation",
-  50: "Kidney and Urinary System",
-  51: "Lungs and Gas Exchange",
-  52: "Gastrointestinal System",
-  53: "Reproductive System",
-  54: "Musculoskeletal System"
-};
-
-// Map category IDs to SVG components
+// Map category IDs to SVG components based on visual representation
 const CATEGORY_ICONS: { [key: number]: React.FC<SvgProps> } = {
-  44: Icon1,
-  45: Icon2,
-  46: Icon3,
-  47: Icon4,
-  48: Icon5,
-  49: Icon6,
-  50: Icon7,
-  51: Icon8,
-  52: Icon9,
-  53: Icon10,
-  54: Icon1, // Using Icon1 as fallback for Musculoskeletal
+  44: Icon1,  // Core Concepts - brain icon
+  45: Icon2,  // Cells Environment - cell icon
+  46: Icon3,  // Nervous System - neuron icon
+  48: Icon4,  // Endocrine Regulation - hormone icon
+  49: Icon6,  // Heart and Circulation - heart icon
+  50: Icon7,  // Kidney and Urinary System - kidney icon
+  51: Icon8,  // Lungs and Gas Exchange - lung icon
+  52: Icon9,  // Gastrointestinal System - digestive icon
+  53: Icon10,  //reproductive icon
+  54: Icon5, //Musculoskeletal System - muscle/bone icon
+  55: Icon11, // Flash Card
 };
 
 export default function CategoryScreen() {
@@ -62,16 +49,21 @@ export default function CategoryScreen() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        // Fetch all categories
+        const categoriesResponse = await axios.get('https://placements.bsms.ac.uk/api/categories');
+        const allCategories = categoriesResponse.data;
+
+        // Fetch questions to get active categories
         const physquizResponse = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
-        const uniqueCategoryIds = [...new Set(physquizResponse.data.map((item: any) => item.category_id))];
-        
-        // Create category objects from the unique IDs
-        const validCategories = uniqueCategoryIds.map(id => ({
-          id,
-          name: CATEGORY_NAMES[id] || `Category ${id}`,
-          description: `Questions related to ${CATEGORY_NAMES[id] || `Category ${id}`}`,
-          icon: CATEGORY_ICONS[id]
-        }));
+        const activeCategories = new Set(physquizResponse.data.map((item: any) => item.category_id));
+
+        // Filter categories to only show ones that have questions and add icons
+        const validCategories = allCategories
+          .filter((category: Category) => activeCategories.has(category.id))
+          .map(category => ({
+            ...category,
+            icon: CATEGORY_ICONS[category.id]
+          }));
         
         setCategories(validCategories);
         setLoading(false);

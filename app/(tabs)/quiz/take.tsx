@@ -24,20 +24,6 @@ interface Category {
   description?: string;
 }
 
-const CATEGORY_NAMES: { [key: number]: string } = {
-  44: "Core Concepts",
-  45: "Cells Environment",
-  46: "Nervous System",
-  47: "Adrenal Glands",
-  48: "Endocrine Regulation",
-  49: "Heart and Circulation",
-  50: "Kidney and Urinary System",
-  51: "Lungs and Gas Exchange",
-  52: "Gastrointestinal System",
-  53: "Reproductive System",
-  54: "Musculoskeletal System"
-};
-
 export default function QuizQuestions() {
   const params = useLocalSearchParams();
   const router = useRouter();
@@ -72,12 +58,9 @@ export default function QuizQuestions() {
       try {
         setLoading(true);
 
-        // Set category using the mapping
-        setCategory({
-          id: Number(categoryId),
-          name: CATEGORY_NAMES[Number(categoryId)] || `Category ${categoryId}`,
-          description: `Questions for ${CATEGORY_NAMES[Number(categoryId)] || `Category ${categoryId}`}`
-        });
+        // Fetch category details
+        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${categoryId}`);
+        setCategory(categoryResponse.data);
 
         // Fetch all questions and filter by category
         const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
@@ -111,9 +94,23 @@ export default function QuizQuestions() {
 
     fetchData();
 
-    // Add a hardware back button handler
     const backHandler = () => {
-      handleFinishQuiz();
+      Alert.alert(
+        'Exit Quiz',
+        'Are you sure you want to exit the quiz?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => null,
+          },
+          {
+            text: 'Exit',
+            onPress: () => router.back(),
+          },
+        ],
+        { cancelable: false }
+      );
       return true;
     };
 
@@ -202,8 +199,8 @@ export default function QuizQuestions() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Pressable style={styles.exitButton} onPress={handleFinishQuiz}>
+      <View style={styles.header}>
+        <Pressable style={styles.exitButton} onPress={() => router.back()}>
           <Text style={styles.exitButtonText}>✕</Text>
         </Pressable>
         <View style={styles.progressContainer}>
@@ -211,7 +208,7 @@ export default function QuizQuestions() {
         </View>
       </View>
       
-      <Text style={styles.questionCount}>
+      <Text style={[styles.questionCount, { fontSize }]}>
         Question {currentIndex + 1} of {questions.length}
       </Text>
 
@@ -276,12 +273,13 @@ export default function QuizQuestions() {
             style={[styles.navButton, styles.finishButton]}
             onPress={handleFinishQuiz}
           >
-            <Text style={styles.navButtonText}>Finish Quiz</Text>
+            <Text style={styles.navButtonText}>Finish</Text>
           </Pressable>
         ) : (
           <Pressable
-            style={styles.navButton}
+            style={[styles.navButton, !showAnswer && styles.disabledButton]}
             onPress={handleNext}
+            disabled={!showAnswer}
           >
             <Text style={styles.navButtonText}>Next</Text>
           </Pressable>
@@ -296,7 +294,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#7F1C3E',
   },
-  headerContainer: {
+  header: {
     width: '100%',
   },
   exitButton: {
