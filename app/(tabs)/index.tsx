@@ -78,9 +78,9 @@ const DashboardApp = () => {
           style={styles.dashboardImage}
         />
         <View style={styles.buttonContainer}>
-          <Link href="/Topics" style={styles.navigationButton}>
+         {/*  <Link href="/Topics" style={styles.navigationButton}>
             <Text style={[styles.buttonText, { fontSize }]}>Take a Quiz</Text>
-          </Link>
+          </Link> */}
          
         </View>
       </View>
@@ -90,7 +90,6 @@ const DashboardApp = () => {
   const ProfileSection = ({ onBack }: { onBack: () => void }) => (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        {renderBackButton(onBack)}
         <Text style={[styles.headerTitle, { fontSize }]}>Profile</Text>
       </View>
       <View style={styles.profileContainer}>
@@ -110,6 +109,9 @@ const DashboardApp = () => {
           <Link href="/screens/EditProfileScreen" style={styles.navigationButton}>
             <Text style={[styles.buttonText, { fontSize }]}>Edit Profile</Text>
           </Link>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button1, { marginTop: 10 }]} onPress={onBack}>
+          <Text style={[styles.buttonText, { fontSize }]}>Return</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -135,7 +137,6 @@ const DashboardApp = () => {
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          {renderBackButton(onBack)}
           <Text style={[styles.headerTitle, { fontSize }]}>Settings</Text>
         </View>
         
@@ -211,13 +212,6 @@ const DashboardApp = () => {
       </View>
     );
   };
-
-  const renderBackButton = (onBack: () => void) => (
-    <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Icon name="arrow-back" size={24} color="#fff" />
-      <Text style={[styles.backButtonText, { fontSize: Math.max(fontSize - 2, 12) }]}>Back</Text>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.mainContainer}>
