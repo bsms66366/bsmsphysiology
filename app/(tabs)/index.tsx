@@ -208,6 +208,10 @@ const DashboardApp = () => {
               </View>
             </Modal>
           </View>
+
+          <TouchableOpacity style={[styles.button1, { marginTop: 20 }]} onPress={onBack}>
+            <Text style={[styles.buttonText, { fontSize }]}>Return</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
