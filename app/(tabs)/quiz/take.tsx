@@ -60,13 +60,11 @@ export default function QuizQuestions() {
       try {
         setLoading(true);
 
-        // Fetch category details
-        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${category_id}`);
-        setCategory(categoryResponse.data);
-
-        // Fetch all questions and filter by category
+        // Fetch all questions first
         const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
         const allQuestions = response.data;
+        
+        // Filter questions by category
         const categoryQuestions = allQuestions.filter(
           (q: Question) => q.category_id.toString() === category_id.toString()
         );
@@ -78,15 +76,22 @@ export default function QuizQuestions() {
           setCurrentQuestion(shuffledQuestions[0]);
           setCurrentIndex(0);
           setPercentageComplete(0);
+          
+          // Set category details
+          const categoryDetails = {
+            id: Number(category_id),
+            name: getCategoryName(category_id),
+          };
+          setCategory(categoryDetails);
         } else {
-          console.error('No questions found for category');
-          Alert.alert('Error', 'No questions found for this category', [
+          console.error('No questions found for category:', category_id);
+          Alert.alert('Error', 'No questions available for this category', [
             { text: 'OK', onPress: () => router.back() }
           ]);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        Alert.alert('Error', 'Failed to load quiz data', [
+        Alert.alert('Error', 'Failed to load questions. Please try again.', [
           { text: 'OK', onPress: () => router.back() }
         ]);
       } finally {
@@ -120,6 +125,24 @@ export default function QuizQuestions() {
 
     return () => subscription.remove();
   }, [params.category_id]);
+
+  // Helper function to get category name
+  const getCategoryName = (category_id: string | number): string => {
+    const categories = {
+      '44': 'Core Concepts',
+      '45': 'Cells Environment',
+      '46': 'Nervous System',
+      '48': 'Endocrine Regulation',
+      '49': 'Heart and Circulation',
+      '50': 'Kidney and Urinary System',
+      '51': 'Lungs and Gas Exchange',
+      '52': 'Gastrointestinal System',
+      '53': 'Reproductive System',
+      '54': 'Musculoskeletal System',
+      '55': 'Flash Card'
+    };
+    return categories[category_id.toString()] || 'Unknown Category';
+  };
 
   const handleOptionSelect = (option: string) => {
     if (showAnswer) return;
