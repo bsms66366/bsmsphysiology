@@ -4,10 +4,11 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { FontSizeProvider } from '../context/FontSizeContext';
-import { FontStyleProvider } from '../context/FontStyleContext';
+import { FontSizeProvider } from '@/context/FontSizeContext';
+import { FontStyleProvider } from '@/context/FontStyleContext';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -31,25 +32,27 @@ export default function RootLayout() {
   }
 
   return (
-    <FontSizeProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <FontStyleProvider>
-          <Stack
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: '#00679A',
-              },
-              headerTintColor: '#fff',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-            }}
-          >
-            {/* Tabs Layout */}
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </FontStyleProvider>
-      </ThemeProvider>
-    </FontSizeProvider>
+    <PaperProvider>
+      <FontSizeProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <FontStyleProvider>
+            <Stack
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor: '#00679A',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }}
+            >
+              {/* Tabs Layout */}
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack>
+          </FontStyleProvider>
+        </ThemeProvider>
+      </FontSizeProvider>
+    </PaperProvider>
   );
 }

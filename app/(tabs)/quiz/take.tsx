@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Image, ScrollView, BackHandler } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
-import { useFontSize } from '../../../context/FontSizeContext';
+import { useFontSize } from '../../../context/FontSizeContext';  // Keep this path as it points to the correct file
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 interface Question {
   id: number;
@@ -13,6 +14,7 @@ interface Question {
   option_2: string;
   option_3: string;
   option_4: string;
+  option_5: string | null;
   explanation: string;
   category_id: number;
   urlCode?: string;
@@ -43,11 +45,11 @@ export default function QuizQuestions() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const categoryId = params.category_id;
+      const category_id = params.category_id;
       
-      console.log('Fetching questions for category:', categoryId);
+      console.log('Fetching questions for category:', category_id);
 
-      if (!categoryId) {
+      if (!category_id) {
         console.error('No category_id provided');
         Alert.alert('Error', 'No category selected', [
           { text: 'OK', onPress: () => router.back() }
@@ -59,14 +61,14 @@ export default function QuizQuestions() {
         setLoading(true);
 
         // Fetch category details
-        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${categoryId}`);
+        const categoryResponse = await axios.get(`https://placements.bsms.ac.uk/api/categories/${category_id}`);
         setCategory(categoryResponse.data);
 
         // Fetch all questions and filter by category
         const response = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
         const allQuestions = response.data;
         const categoryQuestions = allQuestions.filter(
-          (q: Question) => q.category_id.toString() === categoryId.toString()
+          (q: Question) => q.category_id.toString() === category_id.toString()
         );
 
         if (categoryQuestions.length > 0) {

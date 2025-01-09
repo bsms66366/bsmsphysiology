@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image, StatusBar, ScrollView } from 'react-native';
 import axios from 'axios';
-import { useFontSize } from '../../context/FontSizeContext';
+import { useFontSize } from '@/context/FontSizeContext';
 
 interface Flashcard {
   question: string;

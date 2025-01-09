@@ -10,8 +10,8 @@ interface FontSizeContextType {
 
 const FontSizeContext = createContext<FontSizeContextType | undefined>(undefined);
 
-export const FontSizeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [fontSize, setFontSize] = useState(16); // Default font size
+function FontSizeProvider({ children }: { children: React.ReactNode }) {
+  const [fontSize, setFontSize] = useState<number>(16); // Default font size
 
   // Load saved font size when app starts
   useEffect(() => {
@@ -59,12 +59,15 @@ export const FontSizeProvider = ({ children }: { children: React.ReactNode }) =>
       {children}
     </FontSizeContext.Provider>
   );
-};
+}
 
-export const useFontSize = () => {
+function useFontSize(): FontSizeContextType {
   const context = useContext(FontSizeContext);
   if (context === undefined) {
     throw new Error('useFontSize must be used within a FontSizeProvider');
   }
   return context;
-};
+}
+
+export { FontSizeProvider, useFontSize };
+export default FontSizeProvider;

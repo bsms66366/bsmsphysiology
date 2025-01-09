@@ -3,8 +3,6 @@ import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { useFontSize } from '../../../context/FontSizeContext';
-import { SvgProps } from 'react-native-svg';
-
 // Import SVG files
 import Icon1 from '../../../assets/images/icon1.svg';  // Core Concepts
 import Icon2 from '../../../assets/images/icon2.svg';  // Cells Environment
@@ -18,12 +16,20 @@ import Icon9 from '../../../assets/images/icon9.svg';  // Gastrointestinal Syste
 import Icon10 from '../../../assets/images/icon10.svg'; // Reproductive System
 import Icon11 from '../../../assets/images/icon11.svg'; // Flash Cards
 
+interface Question {
+  id: number;
+  category_id: number;
+}
+
 interface Category {
   id: number;
   name: string;
   description?: string;
   icon?: React.FC<SvgProps>;
 }
+
+// Import SVG props type
+import { SvgProps } from 'react-native-svg';
 
 // Map category IDs to SVG components based on visual representation
 const CATEGORY_ICONS: { [key: number]: React.FC<SvgProps> } = {
@@ -35,9 +41,9 @@ const CATEGORY_ICONS: { [key: number]: React.FC<SvgProps> } = {
   50: Icon7,  // Kidney and Urinary System - kidney icon
   51: Icon8,  // Lungs and Gas Exchange - lung icon
   52: Icon9,  // Gastrointestinal System - digestive icon
-  53: Icon10,  //reproductive icon
-  54: Icon5, //Musculoskeletal System - muscle/bone icon
-  55: Icon11, // Flash Card
+  53: Icon10,  // Reproductive System - reproductive icon
+  54: Icon5,  // Musculoskeletal System - muscle/bone icon
+  55: Icon11,  // Flash Card
 };
 
 export default function CategoryScreen() {
@@ -50,16 +56,16 @@ export default function CategoryScreen() {
     const fetchCategories = async () => {
       try {
         // Fetch all categories
-        const categoriesResponse = await axios.get('https://placements.bsms.ac.uk/api/categories');
+        const categoriesResponse = await axios.get<Category[]>('https://placements.bsms.ac.uk/api/categories');
         const allCategories = categoriesResponse.data;
 
         // Fetch questions to get active categories
-        const physquizResponse = await axios.get('https://placements.bsms.ac.uk/api/physquiz');
-        const activeCategories = new Set(physquizResponse.data.map((item: any) => item.category_id));
+        const physquizResponse = await axios.get<Question[]>('https://placements.bsms.ac.uk/api/physquiz');
+        const activeCategories = new Set(physquizResponse.data.map(item => item.category_id));
 
         // Filter categories to only show ones that have questions and add icons
-        const validCategories = allCategories
-          .filter((category: Category) => activeCategories.has(category.id))
+        const validCategories: Category[] = allCategories
+          .filter(category => activeCategories.has(category.id))
           .map(category => ({
             ...category,
             icon: CATEGORY_ICONS[category.id]
