@@ -44,11 +44,15 @@ export default function QuizResults() {
   };
 
   const handleTryAgain = () => {
-    router.push(`/quiz/questions?category_id=${categoryId}`);
+    // Navigate to quiz index first, then to the quiz
+    router.replace('/quiz');
+    setTimeout(() => {
+      router.push(`/quiz/take?category_id=${categoryId}`);
+    }, 100);
   };
 
   const handleBackToCategories = () => {
-    router.push('/quiz');
+    router.replace('/quiz');
   };
 
   return (

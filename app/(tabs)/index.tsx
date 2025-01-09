@@ -73,11 +73,12 @@ const DashboardApp = () => {
       
       <View style={styles.contentContainer}>
         <PhysiologyLogo 
-          width={300} 
-          height={300} 
+          width={350} 
+          height={350} 
           style={styles.dashboardImage}
         />
         <View style={styles.buttonContainer}>
+        <Text style={[styles.headerTitle, { fontSize, marginTop: 1 }]}>Learn Physiology with BSMS</Text>
          {/*  <Link href="/Topics" style={styles.navigationButton}>
             <Text style={[styles.buttonText, { fontSize }]}>Take a Quiz</Text>
           </Link> */}
@@ -235,21 +236,23 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: "#00679A",
-    padding: 15,
+    padding: 20,
+    paddingTop: 60,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     color: "white",
     textAlign: 'center',
+    marginBottom: 15,
   },
   buttonsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 15,
   },
   button: {
     flexDirection: "row",
@@ -275,8 +278,10 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   contentContainer: {
+    flex: 1,
     padding: 20,
     alignItems: "center",
+    justifyContent: 'center',
   },
   profileContainer: {
     padding: 20,
@@ -307,7 +312,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     resizeMode: 'contain',
-    marginVertical: 15,
+    marginVertical: 30,
   },
   navigationButton: {
     backgroundColor: '#00679A',

@@ -210,83 +210,89 @@ export default function QuizQuestions() {
     }
   };
 
-  if (loading || !currentQuestion) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#00679A" />
-        <Text style={styles.loadingText}>Loading questions...</Text>
-      </View>
-    );
-  }
-
-  const options = [
-    { key: 'option_1', value: currentQuestion.option_1 },
-    { key: 'option_2', value: currentQuestion.option_2 },
-    { key: 'option_3', value: currentQuestion.option_3 },
-    { key: 'option_4', value: currentQuestion.option_4 },
-  ];
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable style={styles.exitButton} onPress={() => router.back()}>
-          <Text style={styles.exitButtonText}>✕</Text>
+        <Pressable 
+          style={styles.exitButton}
+          onPress={() => {
+            Alert.alert(
+              'Exit Quiz',
+              'Are you sure you want to exit?',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Exit', onPress: () => router.push('/quiz') }
+              ]
+            );
+          }}
+        >
+          <Text style={styles.exitButtonText}>Exit Quiz</Text>
         </Pressable>
-        <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { width: `${percentageComplete}%` }]} />
-        </View>
+        {currentQuestion && (
+          <Text style={[styles.progress, { fontSize }]}>
+            Question {currentIndex + 1} of {questions.length}
+          </Text>
+        )}
       </View>
-      
-      <Text style={[styles.questionCount, { fontSize }]}>
-        Question {currentIndex + 1} of {questions.length}
-      </Text>
 
-      <ScrollView style={styles.contentContainer}>
-        <Text style={[styles.questionText, { fontSize }]}>
-          {currentQuestion.question}
-        </Text>
-
-        {currentQuestion.urlCode && (
-          <Image
-            source={{ uri: currentQuestion.urlCode }}
-            style={styles.questionImage}
-            resizeMode="contain"
-          />
-        )}
-
-        <View style={styles.optionsContainer}>
-          {options.map((option, index) => (
-            <Pressable
-              key={option.key}
-              style={[
-                styles.optionButton,
-                selectedOption === option.value && styles.selectedOption,
-                showAnswer && option.value === currentQuestion.answer && styles.correctOption,
-                showAnswer && selectedOption === option.value && 
-                selectedOption !== currentQuestion.answer && styles.incorrectOption,
-              ]}
-              onPress={() => handleOptionSelect(option.value)}
-              disabled={showAnswer}
-            >
-              <Text style={[
-                styles.optionText,
-                showAnswer && option.value === currentQuestion.answer && styles.correctOptionText,
-                showAnswer && selectedOption === option.value && 
-                selectedOption !== currentQuestion.answer && styles.incorrectOptionText,
-              ]}>
-                {String.fromCharCode(65 + index)}. {option.value}
-              </Text>
-            </Pressable>
-          ))}
+      {loading ? (
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color="#00679A" />
+          <Text style={styles.loadingText}>Loading questions...</Text>
         </View>
+      ) : (
+        <ScrollView style={styles.contentContainer}>
+          <Text style={[styles.questionText, { fontSize }]}>
+            {currentQuestion.question}
+          </Text>
 
-        {showAnswer && (
-          <View style={styles.answerContainer}>
-            <Text style={[styles.explanationLabel, { fontSize: fontSize - 2 }]}>Explanation:</Text>
-            <Text style={[styles.explanationText, { fontSize }]}>{currentQuestion.explanation}</Text>
+          {currentQuestion.urlCode && (
+            <Image
+              source={{ uri: currentQuestion.urlCode }}
+              style={styles.questionImage}
+              resizeMode="contain"
+            />
+          )}
+
+          <View style={styles.optionsContainer}>
+            {[
+              { key: 'option_1', value: currentQuestion.option_1 },
+              { key: 'option_2', value: currentQuestion.option_2 },
+              { key: 'option_3', value: currentQuestion.option_3 },
+              { key: 'option_4', value: currentQuestion.option_4 },
+            ].map((option, index) => (
+              <Pressable
+                key={option.key}
+                style={[
+                  styles.optionButton,
+                  selectedOption === option.value && styles.selectedOption,
+                  showAnswer && option.value === currentQuestion.answer && styles.correctOption,
+                  showAnswer && selectedOption === option.value && 
+                  selectedOption !== currentQuestion.answer && styles.incorrectOption,
+                ]}
+                onPress={() => handleOptionSelect(option.value)}
+                disabled={showAnswer}
+              >
+                <Text style={[
+                  styles.optionText,
+                  showAnswer && option.value === currentQuestion.answer && styles.correctOptionText,
+                  showAnswer && selectedOption === option.value && 
+                  selectedOption !== currentQuestion.answer && styles.incorrectOptionText,
+                ]}>
+                  {String.fromCharCode(65 + index)}. {option.value}
+                </Text>
+              </Pressable>
+            ))}
           </View>
-        )}
-      </ScrollView>
+
+          {showAnswer && (
+            <View style={styles.answerContainer}>
+              <Text style={[styles.explanationLabel, { fontSize: fontSize - 2 }]}>Explanation:</Text>
+              <Text style={[styles.explanationText, { fontSize }]}>{currentQuestion.explanation}</Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
 
       <View style={styles.navigationContainer}>
         <Pressable
@@ -322,35 +328,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#7F1C3E',
+    padding: 16,
   },
   header: {
-    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingTop: 10,
   },
   exitButton: {
-    position: 'absolute',
-    top: 0,
-    right: 16,
-    zIndex: 1,
+    backgroundColor: '#00679A',
     padding: 8,
+    borderRadius: 5,
   },
   exitButtonText: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  progressContainer: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: '#00679A',
-  },
-  questionCount: {
-    color: '#fff',
     fontSize: 16,
-    textAlign: 'center',
-    marginVertical: 16,
+  },
+  progress: {
+    color: '#fff',
   },
   contentContainer: {
     flex: 1,
