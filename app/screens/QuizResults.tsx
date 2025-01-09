@@ -2,39 +2,38 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFontSize } from '../../context/FontSizeContext';
-import axios from 'axios';
 
 interface Category {
   id: number;
   name: string;
-  description?: string;
 }
 
 export default function QuizResults() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const { fontSize } = useFontSize();
-  const [category, setCategory] = useState<Category | null>(null);
 
   const score = parseInt(params.score as string) || 0;
   const total = parseInt(params.total as string) || 0;
   const percentage = parseInt(params.percentage as string) || 0;
   const categoryId = params.categoryId;
 
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await axios.get(`https://placements.bsms.ac.uk/api/categories/${categoryId}`);
-        setCategory(response.data);
-      } catch (error) {
-        console.error('Error fetching category:', error);
-      }
+  const getCategoryName = (categoryId: string | number): string => {
+    const categories = {
+      '44': 'Core Concepts',
+      '45': 'Cells Environment',
+      '46': 'Nervous System',
+      '48': 'Endocrine Regulation',
+      '49': 'Heart and Circulation',
+      '50': 'Kidney and Urinary System',
+      '51': 'Lungs and Gas Exchange',
+      '52': 'Gastrointestinal System',
+      '53': 'Reproductive System',
+      '54': 'Musculoskeletal System',
+      '55': 'Flash Card'
     };
-
-    if (categoryId) {
-      fetchCategory();
-    }
-  }, [categoryId]);
+    return categories[categoryId.toString()] || 'Unknown Category';
+  };
 
   const getFeedback = (percentage: number) => {
     if (percentage >= 90) return 'Outstanding! Excellent understanding!';
@@ -57,7 +56,7 @@ export default function QuizResults() {
       <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Quiz Results</Text>
       
       <Text style={[styles.categoryName, { fontSize: fontSize + 2 }]}>
-        {category?.name || 'Quiz Complete'}
+        {getCategoryName(categoryId)}
       </Text>
 
       <View style={styles.scoreContainer}>

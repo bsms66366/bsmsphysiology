@@ -150,7 +150,11 @@ export default function QuizQuestions() {
     setShowAnswer(true);
     setAnsweredQuestions(prev => prev + 1);
     
-    if (option === currentQuestion?.answer) {
+    // Normalize both strings for comparison (trim whitespace and convert to lowercase)
+    const normalizedOption = option.trim().toLowerCase();
+    const normalizedAnswer = currentQuestion?.answer.trim().toLowerCase();
+    
+    if (normalizedOption === normalizedAnswer) {
       setScore(prev => prev + 1);
     }
   };
