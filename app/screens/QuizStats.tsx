@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFontSize } from '../../context/FontSizeContext';
+import { useRouter } from 'expo-router';
 
 interface QuizHistory {
   categoryId: string;
@@ -13,30 +13,30 @@ interface QuizHistory {
   date: string;
 }
 
-// Category ID to name mapping
-const categoryMap: { [key: string]: string } = {
-  '44': 'Core Concepts',
-  '45': 'Cells Environment',
-  '46': 'Nervous System',
-  '48': 'Endocrine Regulation',
-  '54': 'Musculoskeletal System',
-  '49': 'Heart and Circulation',
-  '50': 'Kidney and Urinary System',
-  '51': 'Lungs and Gas Exchange',
-  '52': 'Gastrointestinal System',
-  '53': 'Reproductive System'
-};
-
-const getCategoryName = (categoryId: string): string => {
-  return categoryMap[categoryId] || 'Unknown Category';
-};
-
-const QuizResultsScreen = () => {
+export default function QuizStats() {
   const { fontSize } = useFontSize();
+  const router = useRouter();
   const [quizHistory, setQuizHistory] = useState<QuizHistory[]>([]);
   const [totalQuizzes, setTotalQuizzes] = useState(0);
   const [averageScore, setAverageScore] = useState(0);
   const [categoryStats, setCategoryStats] = useState<{[key: string]: { total: number, average: number }}>({});
+
+  const getCategoryName = (categoryId: string | number): string => {
+    const categories = {
+      '44': 'Core Concepts',
+      '45': 'Cells Environment',
+      '46': 'Nervous System',
+      '48': 'Endocrine Regulation',
+      '49': 'Heart and Circulation',
+      '50': 'Kidney and Urinary System',
+      '51': 'Lungs and Gas Exchange',
+      '52': 'Gastrointestinal System',
+      '53': 'Reproductive System',
+      '54': 'Musculoskeletal System',
+      '55': 'Flash Card'
+    };
+    return categories[categoryId.toString()] || 'Unknown Category';
+  };
 
   useEffect(() => {
     const loadQuizHistory = async () => {
@@ -85,7 +85,13 @@ const QuizResultsScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Quiz Statistics</Text>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </Pressable>
+          <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Quiz Statistics</Text>
+          <View style={{ width: 24 }} /> {/* Spacer for alignment */}
+        </View>
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
@@ -143,9 +149,7 @@ const QuizResultsScreen = () => {
       </View>
     </ScrollView>
   );
-};
-
-export default QuizResultsScreen;
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -154,15 +158,21 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    paddingTop: 60,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  backButton: {
+    padding: 8,
   },
   title: {
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 30,
-    marginTop: 20,
-    fontSize: 28,
+    flex: 1,
   },
   statsContainer: {
     flexDirection: 'row',

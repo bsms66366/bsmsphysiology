@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from
 import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { useFontSize } from '../../../context/FontSizeContext';
+import { Ionicons } from '@expo/vector-icons';
 // Import SVG files
 import Icon1 from '../../../assets/images/icon1.svg';  // Core Concepts
 import Icon2 from '../../../assets/images/icon2.svg';  // Cells Environment
@@ -97,7 +98,16 @@ export default function CategoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Select a Category</Text>
+      <View style={styles.headerContainer}>
+        <Text style={[styles.title, { fontSize: fontSize + 4 }]}>Select a Category</Text>
+        <Pressable 
+          style={styles.statsButton}
+          onPress={() => router.push('/screens/QuizStats')}
+        >
+          <Ionicons name="stats-chart" size={24} color="#fff" />
+        </Pressable>
+      </View>
+      
       <Text style={[styles.subtitle, { fontSize }]}>
         Select a category to start practicing questions
       </Text>
@@ -138,6 +148,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#7F1C3E',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  statsButton: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
   },
   title: {
     color: '#fff',
