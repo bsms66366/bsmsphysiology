@@ -20,7 +20,7 @@ export default function CategoryScreen() {
 
   const handleCategorySelect = (categoryId: string) => {
     console.log('Selected category:', categoryId);
-    router.push(`/(tabs)/quiz-results/CategoryQuizCount?category_id=${categoryId}`);
+    router.push(`/(tabs)/quiz-results/CategoryQuizCount?category_id=${category_id}`);
   };
 
   return (

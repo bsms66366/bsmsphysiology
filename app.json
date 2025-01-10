@@ -15,7 +15,19 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cjtaylormade.bsmsphysiology"
+      "bundleIdentifier": "com.cjtaylormade.bsmsphysiology",
+      "usesAppleSignIn": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
+        "BGTaskSchedulerPermittedIdentifiers": [
+          "com.cjtaylormade.bsmsphysiology.refresh"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -35,6 +47,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "exportCompliance": {
+      "usesEncryption": false
     },
     "extra": {
       "eas": {

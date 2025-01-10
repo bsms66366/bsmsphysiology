@@ -79,10 +79,6 @@ const DashboardApp = () => {
         />
         <View style={styles.buttonContainer}>
         <Text style={[styles.headerTitle, { fontSize, marginTop: 1 }]}>Learn Physiology with BSMS</Text>
-         {/*  <Link href="/Topics" style={styles.navigationButton}>
-            <Text style={[styles.buttonText, { fontSize }]}>Take a Quiz</Text>
-          </Link> */}
-         
         </View>
       </View>
     </View>
@@ -228,7 +224,7 @@ const DashboardApp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
   },
   mainContainer: {
     flex: 1,
