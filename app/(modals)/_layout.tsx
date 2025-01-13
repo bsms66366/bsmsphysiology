@@ -4,7 +4,7 @@ export default function ModalLayout() {
   return (
     <Stack screenOptions={{
       headerStyle: {
-        backgroundColor: '#00679A',
+        backgroundColor: '#404040',
       },
       headerTintColor: '#fff',
       headerTitleStyle: {

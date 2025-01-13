@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#7F1C3E",
+    backgroundColor: "#404040",
     padding: 20,
   },
   wrapper: {
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#7F1C3E",
+    backgroundColor: "#404040",
     marginTop: 20,
     font: "#FAF5ED",
   }

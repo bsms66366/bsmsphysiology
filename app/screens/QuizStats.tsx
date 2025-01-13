@@ -154,7 +154,7 @@ export default function QuizStats() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
   },
   content: {
     padding: 20,

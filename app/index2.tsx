@@ -157,7 +157,7 @@ const DashboardApp = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#7F1C3E",
+      backgroundColor: "#404040",
     },
     headerContainer: {
       backgroundColor: "#00679A",
@@ -179,7 +179,7 @@ const DashboardApp = () => {
     button: {
       flexDirection: "row",
       alignItems: "center",
-      backgroundColor: "#7F1C3E",
+      backgroundColor: "#404040",
       padding: 10,
       borderRadius: 5,
     },

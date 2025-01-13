@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#404040',
   },
   headerContainer: {
     backgroundColor: "#00679A",

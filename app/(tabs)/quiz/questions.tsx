@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
   },
   subtitle: {
     fontSize: 18,

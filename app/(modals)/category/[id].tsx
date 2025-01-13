@@ -149,14 +149,14 @@ const styles = StyleSheet.create({
   },
   selectedQuestion: {
     backgroundColor: '#e3f2fd',
-    borderColor: '#7F1C3E',
+    borderColor: '#404040',
     borderWidth: 1,
   },
   questionText: {
     fontSize: 16,
   },
   selectedText: {
-    color: '#7F1C3E',
+    color: '#404040',
     marginTop: 4,
     fontWeight: 'bold',
   },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   button: {
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

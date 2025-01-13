@@ -74,7 +74,7 @@ export default function CategoryQuizCount() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#00679A" />
+        <ActivityIndicator size="large" color="#404040" />
         <Text style={styles.loadingText}>Loading questions...</Text>
       </View>
     );
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
   },
   title: {
     fontSize: 24,

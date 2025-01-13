@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     height: 80,
     width: '100%',
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 16,
@@ -26,6 +26,6 @@ const styles = StyleSheet.create({
     width: '75%',
     height: '30%',
     resizeMode: 'cover',
-    backgroundColor: '#7F1C3E',
+    backgroundColor: '#404040',
   },
 });

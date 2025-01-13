@@ -1,9 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Image, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { WebView } from 'react-native-webview';
 import axios from 'axios';
 import { useFontSize } from '../../context/FontSizeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const isYouTubeUrl = (url: string) => {
+  if (!url) return false;
+  return url.includes('youtube.com') || url.includes('youtu.be');
+};
+
+const getYouTubeVideoId = (url: string) => {
+  if (!url) return null;
+  
+  // Handle youtu.be URLs
+  if (url.includes('youtu.be/')) {
+    // Split on '/' and take the last part, then split on '?' and take the first part
+    const id = url.split('youtu.be/')[1].split('?')[0];
+    return id;
+  }
+  
+  // Handle youtube.com URLs
+  const match = url.match(/[?&]v=([^&]+)/);
+  return match ? match[1] : null;
+};
+
+const VideoPlayer = ({ videoUrl }: { videoUrl: string }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const videoId = getYouTubeVideoId(videoUrl);
+  const windowWidth = Dimensions.get('window').width;
+
+  console.log('VideoPlayer:', {
+    originalUrl: videoUrl,
+    videoId,
+    embedUrl: videoId ? `https://www.youtube.com/embed/${videoId}` : null
+  });
+
+  if (!videoId) return null;
+
+  return (
+    <View style={{
+      width: windowWidth * 0.9,
+      height: windowWidth * 0.5625,
+      backgroundColor: '#f0f0f0',
+      borderWidth: 1,
+      borderColor: '#ddd',
+      marginVertical: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      {isLoading && (
+        <ActivityIndicator 
+          size="large" 
+          color="#00679A"
+          style={{ position: 'absolute', zIndex: 1 }}
+        />
+      )}
+      {hasError ? (
+        <Text style={{ color: 'red' }}>Error loading video</Text>
+      ) : (
+        <WebView
+          style={{ flex: 1, width: '100%' }}
+          source={{ uri: `https://www.youtube.com/embed/${videoId}` }}
+          allowsFullscreenVideo={true}
+          javaScriptEnabled={true}
+          mediaPlaybackRequiresUserAction={false}
+          onError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error('WebView error:', nativeEvent);
+            setHasError(true);
+            setIsLoading(false);
+          }}
+          onLoadStart={() => {
+            console.log('WebView started loading');
+            setIsLoading(true);
+            setHasError(false);
+          }}
+          onLoad={() => {
+            console.log('WebView loaded successfully');
+            setIsLoading(false);
+          }}
+        />
+      )}
+    </View>
+  );
+};
 
 interface Question {
   id: number;
@@ -33,6 +116,11 @@ export default function QuizQuestions() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('Fetching questions with params:', {
+      category_id: params.category_id,
+      questionIds: params.questionIds
+    });
+
     const fetchQuestions = async () => {
       const categoryId = params.category_id?.toString();
       const questionIds = params.questionIds?.toString().split(',') || [];
@@ -55,6 +143,11 @@ export default function QuizQuestions() {
 
       try {
         setLoading(true);
+        console.warn('🚀 Making API request with params:', {
+          category_id: categoryId,
+          question_ids: questionIds.join(',')
+        });
+        
         const response = await axios.get(`https://placements.bsms.ac.uk/api/physquiz`, {
           params: {
             category_id: categoryId,
@@ -62,9 +155,25 @@ export default function QuizQuestions() {
           }
         });
 
-        console.log('API Response:', response.data);
+        console.log('API Response:', {
+          status: response.status,
+          questionCount: response.data?.length,
+          firstQuestion: response.data?.[0],
+        });
         
         if (Array.isArray(response.data) && response.data.length > 0) {
+          console.log('First question details:', {
+            question: response.data[0].question,
+            urlCode: response.data[0].urlCode,
+            isYouTube: response.data[0].urlCode ? isYouTubeUrl(response.data[0].urlCode) : false
+          });
+          
+          console.log('🎯 Setting first question:', {
+            urlCode: response.data[0].urlCode,
+            isYouTube: response.data[0].urlCode ? isYouTubeUrl(response.data[0].urlCode) : false,
+            videoId: response.data[0].urlCode ? getYouTubeVideoId(response.data[0].urlCode) : null
+          });
+          
           setQuestions(response.data);
           setCurrentQuestion(response.data[0]);
           setCurrentIndex(0);
@@ -129,6 +238,7 @@ export default function QuizQuestions() {
   };
 
   if (loading) {
+    console.log('Loading questions...');
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#fff" />
@@ -139,6 +249,11 @@ export default function QuizQuestions() {
 
   if (showResult) {
     const percentage = Math.round((score / questions.length) * 100);
+    console.log('Quiz complete:', {
+      score,
+      totalQuestions: questions.length,
+      percentage
+    });
     return (
       <View style={styles.container}>
         <Text style={[styles.resultText, { fontSize: fontSize * 1.5 }]}>Quiz Complete!</Text>
@@ -156,12 +271,20 @@ export default function QuizQuestions() {
   }
 
   if (!currentQuestion) {
+    console.log('No current question available');
     return (
       <View style={styles.container}>
         <Text style={[styles.loadingText, { fontSize }]}>No questions available</Text>
       </View>
     );
   }
+
+  console.log('Rendering question:', {
+    id: currentQuestion.id,
+    question: currentQuestion.question,
+    urlCode: currentQuestion.urlCode,
+    isYouTube: currentQuestion.urlCode ? isYouTubeUrl(currentQuestion.urlCode) : false
+  });
 
   return (
     <View style={styles.container}>
@@ -175,12 +298,20 @@ export default function QuizQuestions() {
       
       <Text style={[styles.questionText, { fontSize }]}>{currentQuestion.question}</Text>
 
+      {console.log('Current question URL:', currentQuestion.urlCode)}
       {currentQuestion.urlCode && (
-        <Image
-          source={{ uri: currentQuestion.urlCode }}
-          style={styles.questionImage}
-          resizeMode="contain"
-        />
+        console.log('Checking if YouTube:', isYouTubeUrl(currentQuestion.urlCode)),
+        isYouTubeUrl(currentQuestion.urlCode) ? (
+          console.log('Rendering video player for URL:', currentQuestion.urlCode),
+          <VideoPlayer videoUrl={currentQuestion.urlCode} />
+        ) : (
+          console.log('Rendering image for URL:', currentQuestion.urlCode),
+          <Image
+            source={{ uri: currentQuestion.urlCode }}
+            style={styles.questionImage}
+            resizeMode="contain"
+          />
+        )
       )}
 
       <View style={styles.optionsContainer}>
