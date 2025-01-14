@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Modal, ScrollView, Pressable } from 'react-native';
-import { Link, usePathname } from 'expo-router';
+import { Link, usePathname, useRouter } from 'expo-router';
 import Icon from "@expo/vector-icons/Ionicons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFontSize } from '../../context/FontSizeContext';
@@ -17,6 +17,7 @@ const DashboardApp = () => {
   const [user, setUser] = useState<UserProfile>({ name: '', email: '' });
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const { fontSize } = useFontSize();
 
   const loadUserProfile = async () => {
@@ -78,7 +79,7 @@ const DashboardApp = () => {
           style={styles.dashboardImage}
         />
         <View style={styles.buttonContainer}>
-        <Text style={[styles.headerTitle, { fontSize, marginTop: 1 }]}>Learn Physiology with BSMS</Text>
+          <Text style={[styles.headerTitle, { fontSize, marginTop: 1 }]}>Learn Physiology with BSMS</Text>
         </View>
       </View>
     </View>

@@ -43,11 +43,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="quiz-results"
+        name="video-test"
         options={{
-          title: 'Results',
+          title: 'Videos',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'trophy' : 'trophy-outline'} color={color} />
+            <TabBarIcon name={focused ? 'videocam' : 'videocam-outline'} color={color} />
           ),
         }}
       />

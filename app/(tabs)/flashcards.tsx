@@ -23,6 +23,16 @@ const getYouTubeVideoId = (url: string) => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
+const isImageUrl = (url: string) => {
+  if (!url) return false;
+  // Check if it's not a video URL
+  if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('panopto')) {
+    return false;
+  }
+  // Check if it's an image URL
+  return url.match(/\.(jpeg|jpg|gif|png)$/) != null || url.includes('/storage/');
+};
+
 const FlashcardPage: React.FC = () => {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -104,7 +114,7 @@ const FlashcardPage: React.FC = () => {
             >
               {flashcards[currentIndex] && (
                 <>
-                  {flashcards[currentIndex].urlCode && (
+                  {flashcards[currentIndex].urlCode && isImageUrl(flashcards[currentIndex].urlCode) && (
                     <Image
                       source={{ uri: flashcards[currentIndex].urlCode }}
                       style={styles.image}

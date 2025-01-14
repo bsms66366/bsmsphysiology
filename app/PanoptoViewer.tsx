@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View, Alert } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 interface PanoptoViewerProps {
@@ -12,93 +12,109 @@ const PanoptoViewer = ({ url, title }: PanoptoViewerProps) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('PanoptoViewer mounted with URL:', url);
+    console.log('[PanoptoViewer] Mounted with URL:', url);
   }, [url]);
 
   const handlePress = async () => {
     try {
+      console.log('[PanoptoViewer] Starting to open URL');
+      console.log('[PanoptoViewer] URL type:', typeof url);
+      console.log('[PanoptoViewer] URL length:', url?.length);
+      console.log('[PanoptoViewer] Opening URL:', url);
       setLoading(true);
       setError(null);
-      console.log('Attempting to open Panopto URL:', url);
       
-      if (!url.startsWith('https://brighton.cloud.panopto.eu')) {
-        throw new Error('Invalid Panopto URL format');
+      if (!url) {
+        throw new Error('No URL provided');
       }
 
-      await WebBrowser.openBrowserAsync(url);
+      // Handle different video types
+      if (url.includes('brighton.cloud.panopto.eu')) {
+        if (!url.startsWith('https://brighton.cloud.panopto.eu')) {
+          throw new Error('Invalid Panopto URL format');
+        }
+      } else if (url.includes('youtu.be') || url.includes('youtube.com')) {
+        if (!url.startsWith('https://')) {
+          throw new Error('Invalid YouTube URL format');
+        }
+      } else {
+        throw new Error('Unsupported video URL format');
+      }
+
+      const result = await WebBrowser.openBrowserAsync(url);
+      console.log('[PanoptoViewer] Browser result:', result);
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to open video';
-      console.error('Error opening video:', errorMessage);
+      console.error('[PanoptoViewer] Error:', errorMessage);
       setError(errorMessage);
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.wrapper}>
-      <TouchableOpacity 
-        style={[styles.container, error && styles.errorContainer]} 
-        onPress={handlePress}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator size="small" color="#2196F3" />
-        ) : (
-          <>
-            <Text style={styles.playButton}>▶ Watch Video</Text>
-            {title && <Text style={styles.title}>{title}</Text>}
+    <TouchableOpacity 
+      style={[styles.container, error && styles.errorContainer]} 
+      onPress={handlePress}
+      disabled={loading}
+    >
+      {loading ? (
+        <ActivityIndicator size="large" color="#2196F3" />
+      ) : (
+        <View style={styles.content}>
+          <Text style={styles.playIcon}>▶</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.playButton}>
+              {url.includes('youtube.com') || url.includes('youtu.be') 
+                ? 'Watch on YouTube'
+                : 'Watch on Panopto'}
+            </Text>
             {error && <Text style={styles.errorText}>{error}</Text>}
-            <Text style={styles.urlText}>{url}</Text>
-          </>
-        )}
-      </TouchableOpacity>
-    </View>
+          </View>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    backgroundColor: '#404040',
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 16,
-    width: '100%',
-  },
   container: {
     backgroundColor: '#ffffff',
-    padding: 15,
+    padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    minHeight: 50,
-    justifyContent: 'center',
     width: '100%',
+    borderWidth: 1,
+    borderColor: '#2196F3',
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  textContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  playIcon: {
+    fontSize: 24,
+    color: '#2196F3',
+    marginRight: 8,
   },
   errorContainer: {
     backgroundColor: '#ffebee',
+    borderColor: '#f44336',
   },
   playButton: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#2196F3',
     fontWeight: '600',
   },
-  title: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
   errorText: {
     color: '#f44336',
-    marginTop: 8,
+    marginTop: 4,
     fontSize: 12,
-    textAlign: 'center',
-  },
-  urlText: {
-    color: '#666',
-    marginTop: 8,
-    fontSize: 10,
-    textAlign: 'center',
   },
 });
 

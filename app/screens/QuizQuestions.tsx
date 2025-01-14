@@ -110,11 +110,12 @@ export default function QuizQuestions() {
         });
 
         if (Array.isArray(response.data) && response.data.length > 0) {
-          console.log('Questions received:', response.data.map(q => ({
-            id: q.id,
-            question: q.question,
-            urlCode: q.urlCode
-          })));
+          console.log('API Response:', response.data);
+          console.log('First question details:', {
+            id: response.data[0].id,
+            question: response.data[0].question,
+            urlCode: response.data[0].urlCode,
+          });
           
           setQuestions(response.data);
           setCurrentQuestion(response.data[0]);
@@ -236,15 +237,46 @@ export default function QuizQuestions() {
       <Text style={[styles.questionNumber, { fontSize: fontSize * 0.8 }]}>
         Question {currentIndex + 1} of {questions.length}
       </Text>
+
+      <Text style={[styles.debugText, { fontSize }]}>
+        Debug - Question ID: {currentQuestion.id}
+      </Text>
       
       <Text style={[styles.questionText, { fontSize }]}>{currentQuestion.question}</Text>
 
       {currentQuestion.urlCode && (
         <>
-          <Text style={[styles.debugText, { fontSize }]}>
-            Media URL: {currentQuestion.urlCode}
+          <Text style={[styles.debugText, { fontSize, color: 'blue' }]}>
+            Debug - Media URL: {currentQuestion.urlCode}
           </Text>
-          <MediaPlayer url={currentQuestion.urlCode} />
+          <View style={styles.mediaContainer}>
+            {(() => {
+              console.log('Processing URL:', currentQuestion.urlCode);
+              const url = currentQuestion.urlCode;
+              
+              if (url.includes('brighton.cloud.panopto.eu') || url.includes('youtu.be') || url.includes('youtube.com')) {
+                const videoType = url.includes('brighton.cloud.panopto.eu') ? 'Panopto' : 'YouTube';
+                console.log(`Rendering ${videoType} video`);
+                return (
+                  <View style={styles.videoContainer}>
+                    <PanoptoViewer url={url} />
+                  </View>
+                );
+              } else {
+                console.log('Rendering image');
+                return (
+                  <Image
+                    source={{ uri: url }}
+                    style={[
+                      styles.mediaContent,
+                      { width: Dimensions.get('window').width * 0.9, height: Dimensions.get('window').width * 0.9 }
+                    ]}
+                    resizeMode="contain"
+                  />
+                );
+              }
+            })()}
+          </View>
         </>
       )}
 
@@ -325,11 +357,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   mediaContainer: {
-    marginVertical: 10,
+    marginVertical: 16,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  videoContainer: {
+    width: '100%',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
+    overflow: 'hidden',
   },
   mediaContent: {
     borderRadius: 8,
+    backgroundColor: '#ffffff',
   },
   optionsContainer: {
     gap: 12,
