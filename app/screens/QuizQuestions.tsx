@@ -1,31 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Image, Dimensions, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import axios from 'axios';
 import { useFontSize } from '../../context/FontSizeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PanoptoViewer } from '../components/PanoptoViewer';
+import PanoptoViewer from '../PanoptoViewer';
 
 const MediaPlayer = ({ url }: { url: string }) => {
   const windowWidth = Dimensions.get('window').width;
   
-  if (!url) return null;
+  if (!url) {
+    console.log('MediaPlayer: No URL provided');
+    return null;
+  }
+
+  console.log('MediaPlayer received URL:', url);
 
   // Check if the URL is a Panopto video URL
-  if (url.includes('panopto')) {
-    return <PanoptoViewer videoUrl={url} />;
+  if (url.includes('brighton.cloud.panopto.eu')) {
+    console.log('Rendering PanoptoViewer for URL:', url);
+    return (
+      <View style={styles.mediaContainer}>
+        <PanoptoViewer url={url} />
+      </View>
+    );
   }
   
   // If not a video, render as image
+  console.log('Rendering image for URL:', url);
   return (
-    <Image
-      source={{ uri: url }}
-      style={[
-        styles.mediaContent,
-        { width: windowWidth * 0.9, height: windowWidth * 0.9 }
-      ]}
-      resizeMode="contain"
-    />
+    <View style={styles.mediaContainer}>
+      <Image
+        source={{ uri: url }}
+        style={[
+          styles.mediaContent,
+          { width: windowWidth * 0.9, height: windowWidth * 0.9 }
+        ]}
+        resizeMode="contain"
+      />
+    </View>
   );
 };
 
@@ -84,7 +97,7 @@ export default function QuizQuestions() {
 
       try {
         setLoading(true);
-        console.warn('🚀 Making API request with params:', {
+        console.warn('Making API request with params:', {
           category_id: categoryId,
           question_ids: questionIds.join(',')
         });
@@ -96,49 +109,12 @@ export default function QuizQuestions() {
           }
         });
 
-        // Log all questions in the gastrointestinal category (52)
-        if (categoryId === '52') {
-          console.log('Gastrointestinal Questions:', response.data
-            .filter(q => q.question.toLowerCase().includes('digestive') || q.question.toLowerCase().includes('7 steps'))
-            .map(q => ({
-              id: q.id,
-              question: q.question,
-              urlCode: q.urlCode,
-              isYouTube: q.urlCode ? false : false
-            }))
-          );
-        }
-
         if (Array.isArray(response.data) && response.data.length > 0) {
-          const digestiveQuestion = response.data.find(q => 
-            q.question.toLowerCase().includes('digestive') || 
-            q.question.toLowerCase().includes('7 steps')
-          );
-          
-          if (digestiveQuestion) {
-            console.log('Found digestive question:', {
-              id: digestiveQuestion.id,
-              question: digestiveQuestion.question,
-              urlCode: digestiveQuestion.urlCode,
-              isYouTube: digestiveQuestion.urlCode ? false : false
-            });
-          }
           console.log('Questions received:', response.data.map(q => ({
             id: q.id,
             question: q.question,
             urlCode: q.urlCode
           })));
-          console.log('First question details:', {
-            question: response.data[0].question,
-            urlCode: response.data[0].urlCode,
-            isYouTube: response.data[0].urlCode ? false : false
-          });
-          
-          console.log('🎯 Setting first question:', {
-            urlCode: response.data[0].urlCode,
-            isYouTube: response.data[0].urlCode ? false : false,
-            videoId: null
-          });
           
           setQuestions(response.data);
           setCurrentQuestion(response.data[0]);
@@ -249,7 +225,6 @@ export default function QuizQuestions() {
     id: currentQuestion.id,
     question: currentQuestion.question,
     urlCode: currentQuestion.urlCode,
-    isYouTube: currentQuestion.urlCode ? false : false
   });
 
   return (
@@ -265,7 +240,12 @@ export default function QuizQuestions() {
       <Text style={[styles.questionText, { fontSize }]}>{currentQuestion.question}</Text>
 
       {currentQuestion.urlCode && (
-        <MediaPlayer url={currentQuestion.urlCode} />
+        <>
+          <Text style={[styles.debugText, { fontSize }]}>
+            Media URL: {currentQuestion.urlCode}
+          </Text>
+          <MediaPlayer url={currentQuestion.urlCode} />
+        </>
       )}
 
       <View style={styles.optionsContainer}>
@@ -344,8 +324,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     fontWeight: '500',
   },
-  mediaContent: {
+  mediaContainer: {
     marginVertical: 10,
+    borderRadius: 8,
+  },
+  mediaContent: {
     borderRadius: 8,
   },
   optionsContainer: {
@@ -414,5 +397,10 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  debugText: {
+    color: '#fff',
+    marginBottom: 8,
+    opacity: 0.8,
   },
 });
